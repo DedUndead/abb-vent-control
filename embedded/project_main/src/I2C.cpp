@@ -39,7 +39,7 @@ void I2C::init_I2C_PinMux(void)
 }
 
 /**
- * @brief Run and execute transaction
+ * @brief Run and execute I2C transaction
  */
 void I2C::execute_transaction(uint8_t dev_address,
 							  uint8_t *txBuffPtr,
@@ -72,6 +72,34 @@ uint16_t I2C::read(uint8_t dev_address, uint8_t target_register, uint8_t* read_b
 			dev_address,
 			&target_register, 1,
 			read_buffer, buffer_size
+	);
+
+	return i2cmXferRec.status;
+}
+
+/**
+ * @brief Write to slave's register using I2C
+ * @param dev_address     Address of slave
+ * @param target_register Register to write to
+ * @param write_buffer    Data to write
+ * @param buffer_size     Size of data in bytes
+ * @return                Status of transaction
+ */
+uint16_t I2C::write(uint8_t dev_address, uint8_t target_register, uint8_t* write_buffer, uint16_t buffer_size)
+{
+	// Create transmit buffer
+	uint8_t tx_buffer[MAX_LENGTH_BUFFER];
+	tx_buffer[0] = target_register; // Put register address as a first byte
+
+	// Append data to the rest of transmit buffer
+	for (int i = 1; i <= buffer_size; i++) {
+		tx_buffer[i] = write_buffer[i - 1];
+	}
+
+	execute_transaction(
+			dev_address,
+			tx_buffer, 1 + buffer_size,
+			NULL, 0
 	);
 
 	return i2cmXferRec.status;
