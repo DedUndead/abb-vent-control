@@ -4,7 +4,6 @@
 const path = require('path');
 const mongoUtils = require('./utils/mongo_utils.js');
 const express = require('express');
-const { appendFile } = require('fs');
 
 
 /* CONSTANTS */
