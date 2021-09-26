@@ -17,7 +17,9 @@ const app = express();
 app.use(express.static(path.resolve(__dirname, 'public')));
 
 /* EXPRESS PATHS */
-
+app.get('/', (req, res) => {
+	res.send('placeholder');
+});
 
 /* LISTENERS */
 app.listen(3000);
