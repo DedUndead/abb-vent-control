@@ -15,9 +15,9 @@ private:
 	const int io_pin;
 	const bool is_input;
 	const bool is_invert;
+
 	void init_as_input(const bool& pullup);
 	void init_as_output();
-
 };
 
 
