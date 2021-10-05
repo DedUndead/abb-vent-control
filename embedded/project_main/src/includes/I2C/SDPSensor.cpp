@@ -1,5 +1,5 @@
-#include "headers/SDPSensor.h"
-#include "headers/I2C.h"
+#include "SDPSensor.h"
+#include "I2C.h"
 
 /**
  * @brief Pressure sensor abstraction.

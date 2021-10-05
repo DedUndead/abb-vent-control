@@ -1,4 +1,4 @@
-#include "headers/LiquidCrystal.h"
+#include "LiquidCrystal.h"
 
 #include <cstring>
 #include "chip.h"

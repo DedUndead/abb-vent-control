@@ -5,9 +5,10 @@
  *  Author: keijo
  */
 
+#include "LpcUart.h"
+
 #include <cstring>
 #include <string>
-#include "headers/LpcUart.h"
 
 
 static LpcUart *u0;

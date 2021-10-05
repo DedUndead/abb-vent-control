@@ -1,5 +1,6 @@
+#include "DigitalIoPin.h"
+
 #include "chip.h"
-#include "headers/digitaliopin.h"
 
 /**
  * @brief Initialize IO pin
