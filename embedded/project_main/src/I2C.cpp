@@ -61,7 +61,7 @@ void I2C::execute_transaction(uint8_t dev_address,
 /**
  * @brief Read from slave's register using I2C
  * @param dev_address     Address of slave
- * @param target_register Register to read from
+ * @param target_register Register to read from or command that initiates reading
  * @param read_buffer     Buffer to save read data, rx
  * @param buffer_size     Size of rx buffer
  * @return                Status of transaction

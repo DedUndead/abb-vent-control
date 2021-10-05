@@ -62,6 +62,7 @@ bool DigitalIoPin::read()
 
 /**
  * @brief Write state of the output pin
+ * @param value Target state
  */
 void DigitalIoPin::write(bool value)
 {
