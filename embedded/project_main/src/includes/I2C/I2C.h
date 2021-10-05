@@ -2,7 +2,7 @@
 #define SRC_HEADERS_I2C_H_
 
 
-#include <chip.h>
+#include "chip.h"
 #include <string>
 
 #define MAX_LENGTH_BUFFER 10

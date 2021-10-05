@@ -5,7 +5,8 @@
 #include <cstddef>
 #include <string>
 #include "chip.h"
-#include "digitaliopin.h"
+
+#include "digitaliopin/DigitalIoPin.h"
 
 // commands
 #define LCD_CLEARDISPLAY 0x01

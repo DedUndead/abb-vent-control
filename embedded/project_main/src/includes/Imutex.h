@@ -1,5 +1,5 @@
-#ifndef HEADERS_IMUTEX_H_
-#define HEADERS_IMUTEX_H_
+#ifndef INCLUDES_IMUTEX_H_
+#define INCLUDES_IMUTEX_H_
 
 #include "chip.h"
 
@@ -21,4 +21,4 @@ private:
 	bool enable;
 };
 
-#endif /* HEADERS_IMUTEX_H_ */
+#endif /* INCLUDES_IMUTEX_H_ */

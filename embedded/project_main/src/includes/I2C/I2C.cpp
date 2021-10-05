@@ -1,6 +1,7 @@
+#include "I2C.h"
+
 #include <chip.h>
 #include <string>
-#include "headers/I2C.h"
 
 I2C::I2C(const uint32_t clock_divider_, const uint32_t bitrate_, const uint8_t mode_) :
 	clock_divider(clock_divider_),
