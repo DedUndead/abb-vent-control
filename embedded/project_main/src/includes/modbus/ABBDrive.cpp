@@ -16,13 +16,16 @@ ABBDrive::ABBDrive() :
 {
 	node.begin(TRANSMISSION_RATE);
 
-	// Prepare for starting
-	control_word = CMD_PREP;
-	delay_systick(BREAK_TIME);
+	// Simulator allows to combine several startup states into one assignment
+	if ((status_word & 1) == 0) {
+		// Prepare for starting
+		control_word = CMD_PREP;
+		delay_systick(BREAK_TIME);
 
-	// Set to start mode
-	control_word = CMD_START;
-	delay_systick(BREAK_TIME);
+		// Set to start mode
+		control_word = CMD_START;
+		delay_systick(BREAK_TIME);
+	}
 }
 
 /**

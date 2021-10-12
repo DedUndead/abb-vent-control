@@ -4,8 +4,6 @@
 
 #include <atomic>
 
-extern volatile uint32_t systicks;
-extern volatile std::atomic_int delay;
 
 void delay_systick(const int& ticks);
 uint32_t millis();
