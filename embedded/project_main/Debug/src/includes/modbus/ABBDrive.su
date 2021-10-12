@@ -1,0 +1,4 @@
+gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
+ABBDrive.cpp:9:1:ABBDrive::ABBDrive()	24	static
+ABBDrive.cpp:36:6:bool ABBDrive::set_frequency(const uint16_t&)	32	static
+ABBDrive.cpp:58:5:int ABBDrive::get_frequency()	16	static

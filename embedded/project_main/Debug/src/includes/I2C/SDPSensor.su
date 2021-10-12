@@ -1,0 +1,4 @@
+gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
+SDPSensor.cpp:11:1:SDPSensor::SDPSensor(I2C*, int, float)	24	static
+SDPSensor.cpp:22:9:int16_t SDPSensor::read()	32	static
+SDPSensor.cpp:46:9:int16_t SDPSensor::transfer_function(uint8_t*)	24	static

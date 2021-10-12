@@ -25,7 +25,6 @@
 #include "I2C/SDPSensor.h"
 #include "delay.h"
 
-
 /* MACROS, CONSTANTS */
 #define SYSTICKRATE_HZ 1000
 #define I2C_CLOCKDIV   72000000 / 1000000
@@ -35,10 +34,10 @@
 /* FUNCTION DEFINITIONS */
 void set_systick(const int& freq);
 
-
 /* INTERRUPT HANDLERS */
-volatile std::atomic_int delay(0);
-volatile uint32_t systicks(0);
+static volatile std::atomic_int delay(0);
+static volatile uint32_t systicks(0);
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -80,17 +79,14 @@ int main(void) {
 
 	delay_systick(100);
 
-	abb_drive.set_frequency(15000);
+	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
 
     /* Main polling loop */
     while(1) {
     	int16_t pressure = pressure_sensor.read();
     	uart.write(std::to_string(pressure) + "\r\n");
 
-    	if (abb_drive.get_frequency() < 1000) {
-    		abb_drive.set_frequency(15000);
-    	}
-
+    	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
         delay_systick(1000);
     }
 

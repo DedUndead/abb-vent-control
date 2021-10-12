@@ -1,0 +1,11 @@
+core_cm3.h:1335:22:void NVIC_DisableIRQ(IRQn_Type)	16	static
+iocon_15xx.h:95:20:void Chip_IOCON_PinMuxSet(LPC_IOCON_T*, uint8_t, uint8_t, uint32_t)	24	static
+i2c_common_15xx.h:238:20:void Chip_I2C_SetClockDiv(LPC_I2C_T*, uint32_t)	16	static
+i2cm_15xx.h:126:20:void Chip_I2CM_Enable(LPC_I2C_T*)	16	static
+gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
+I2C.cpp:5:1:I2C::I2C(uint32_t, uint32_t, uint8_t)	24	static
+I2C.cpp:18:6:void I2C::setup_I2C_master()	16	static
+I2C.cpp:33:6:void I2C::init_I2C_PinMux()	16	static
+I2C.cpp:44:6:void I2C::execute_transaction(uint8_t, uint8_t*, uint16_t, uint8_t*, uint16_t)	24	static
+I2C.cpp:69:10:uint16_t I2C::read(uint8_t, uint8_t, uint8_t*, uint16_t)	32	static
+I2C.cpp:88:10:uint16_t I2C::write(uint8_t, uint8_t, uint8_t*, uint16_t)	48	static
