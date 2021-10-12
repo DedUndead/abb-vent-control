@@ -19,6 +19,7 @@
 /* INCLUDES */
 #include <cr_section_macros.h>
 #include <string>
+#include <atomic>
 #include "modbus/ABBDrive.h"
 #include "uart/LpcUart.h" // Remove after debugging finished
 #include "I2C/I2C.h"
@@ -110,7 +111,7 @@ void set_systick(const int& freq)
  * @brief Delay execution by amount of systicks
  * @param ticks Number of ticks for delay
  */
-void delay_systick(const int& ticks)
+void delay_systick(const int ticks)
 {
 	delay = ticks;
 	while (delay > 0) {

@@ -21,9 +21,9 @@
 
 #include "serial_port.h"
 
-typedef int EspSocket_t;
+#include "delay.h"
 
-uint32_t get_ticks(void); // defined externally
+typedef int EspSocket_t;
 
 
 #define I_DONT_USE(x) (void) x
@@ -731,7 +731,7 @@ static void EspSocketRun(smi *ctx)
 	static uint32_t old = 0 ;
     uint32_t now = 0 ;
 
-	now = get_ticks()/100;
+	now = millis()/100;
 	if(now != old) {
 	    const event tick = { eTick };
 		old = now;

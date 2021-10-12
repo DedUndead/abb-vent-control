@@ -4,7 +4,7 @@
  *  Created on: 25.8.2021
  *      Author: keijo
  */
-#include "LpcUart.h"
+#include "uart/LpcUart.h"
 #include "serial_port.h"
 
 #ifdef __cplusplus

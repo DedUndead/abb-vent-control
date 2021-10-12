@@ -18,7 +18,7 @@
 #include <string.h>
 #include "MQTT_lpc1549.h"
 
-#include "systick.h"
+#include "delay.h"
 #include "esp8266_socket.h"
 
 
@@ -27,7 +27,7 @@
 void TimerCountdownMS(Timer* timer, unsigned int timeout_ms)
 {
 	timer->TicksToWait = timeout_ms;
-	timer->Start = get_ticks();
+	timer->Start = millis();
 }
 
 
@@ -39,14 +39,14 @@ void TimerCountdown(Timer* timer, unsigned int timeout)
 
 int TimerLeftMS(Timer* timer) 
 {
-	int32_t left = (int32_t)timer->TicksToWait - (int32_t)(get_ticks() - timer->Start);
+	int32_t left = (int32_t)timer->TicksToWait - (int32_t)(millis() - timer->Start);
     return left < 0 ? 0 : left;
 }
 
 
 char TimerIsExpired(Timer* timer)
 {
-	return (get_ticks() - timer->Start) > timer->TicksToWait;
+	return (millis() - timer->Start) > timer->TicksToWait;
 }
 
 

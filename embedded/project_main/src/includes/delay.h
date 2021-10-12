@@ -2,10 +2,10 @@
 #define INCLUDES_DELAY_H_
 
 
-#include <atomic>
+#include <stdint.h>
 
 
-void delay_systick(const int& ticks);
+void delay_systick(const int ticks);
 uint32_t millis();
 
 
