@@ -18,12 +18,13 @@
 
 /* INCLUDES */
 #include <cr_section_macros.h>
-#include <string>
 #include <atomic>
+#include <cstring>
 #include "modbus/ABBDrive.h"
 #include "uart/LpcUart.h" // Remove after debugging finished
 #include "I2C/I2C.h"
 #include "I2C/SDPSensor.h"
+#include "mqtt/MQTT.h"
 #include "delay.h"
 
 /* MACROS, CONSTANTS */
@@ -31,6 +32,10 @@
 #define I2C_CLOCKDIV   72000000 / 1000000
 #define I2C_BITRATE    1000000
 #define SDP_ERR        0x1F5
+#define MQTT_IP        (char *)"18.198.188.151"
+#define MQTT_PORT      21883
+#define NETWORK_SSID   (char *)"V46D-1"
+#define NETWORK_PASS   (char *)"2483124831"
 
 /* FUNCTION DEFINITIONS */
 void set_systick(const int& freq);
@@ -38,7 +43,6 @@ void set_systick(const int& freq);
 /* INTERRUPT HANDLERS */
 static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,7 +73,12 @@ int main(void) {
     set_systick(SYSTICKRATE_HZ);
     Chip_RIT_Init(LPC_RITIMER);
 
+    /* Configure frequency controller */
     ABBDrive abb_drive;
+
+    /* Configure MQTT */
+    MQTT mqtt;
+    mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
 
     /* Remove after debugging finished */
 	LpcPinMap none = {-1, -1}; // unused pin has negative values in it
@@ -80,15 +89,19 @@ int main(void) {
 
 	delay_systick(100);
 
+	/* Test values remove after debugging */
 	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
+	char mes[] = "Hi, guys!";
 
     /* Main polling loop */
     while(1) {
     	int16_t pressure = pressure_sensor.read();
     	uart.write(std::to_string(pressure) + "\r\n");
+    	mqtt.publish("/iot/grp1", mes, strlen(mes));
 
     	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
-        delay_systick(1000);
+
+        delay_systick(5000);
     }
 
 

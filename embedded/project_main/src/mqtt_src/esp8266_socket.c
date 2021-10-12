@@ -16,11 +16,8 @@
 #include <string.h>
 
 #include "ring_buffer.h"
-
 #include "esp8266_socket.h"
-
 #include "serial_port.h"
-
 #include "delay.h"
 
 typedef int EspSocket_t;
