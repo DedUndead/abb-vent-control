@@ -28,6 +28,8 @@ int MQTT::connect(const char* ssid, const char* pass, char* ip, int port)
 	connect_data.MQTTVersion = MQTT_VERSION;
 	connect_data.clientID.cstring = (char *)CLIENT_ID;
 
+	status = MQTTConnect(&client, &connect_data);
+
 	return status;
 }
 
