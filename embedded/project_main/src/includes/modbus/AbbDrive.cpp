@@ -1,12 +1,12 @@
 #include "chip.h"
 #include "delay.h"
-#include "ABBDrive.h"
+#include "AbbDrive.h"
 
 /**
  * @brief ABB Drive class encapsulates frequency control
  * Modbus interface is utilized
  */
-ABBDrive::ABBDrive() :
+AbbDrive::AbbDrive() :
 	node(SLAVE_ID),
 	control_word(&node, CONTROL_WORD_ADDRESS),
 	frequency(&node, FREQ_CONTROL_ADDRESS),
@@ -33,7 +33,7 @@ ABBDrive::ABBDrive() :
  * @param  freq Target frequency
  * @return      True on success, false on timeout
  */
-bool ABBDrive::set_frequency(const uint16_t& freq)
+bool AbbDrive::set_frequency(const uint16_t& freq)
 {
 	frequency = freq;
 	bool done = false;
@@ -55,7 +55,7 @@ bool ABBDrive::set_frequency(const uint16_t& freq)
  * @brief Get current drive's frequency
  * @return Value of current frequency register
  */
-int ABBDrive::get_frequency()
+int AbbDrive::get_frequency()
 {
 	return output_freq;
 }

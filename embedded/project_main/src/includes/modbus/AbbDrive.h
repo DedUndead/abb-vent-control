@@ -1,5 +1,5 @@
-#ifndef INCLUDES_MODBUS_ABBDRIVE_H_
-#define INCLUDES_MODBUS_ABBDRIVE_H_
+#ifndef INCLUDES_MODBUS_AbbDrive_H_
+#define INCLUDES_MODBUS_AbbDrive_H_
 
 
 #include "ModbusMaster.h"
@@ -18,9 +18,9 @@
 #define SUCCESS_MASK         0x0100
 #define BREAK_TIME           1000
 
-class ABBDrive {
+class AbbDrive {
 public:
-	ABBDrive();
+	AbbDrive();
 	bool set_frequency(const uint16_t& freq);
 	int get_frequency();
 private:
@@ -33,4 +33,4 @@ private:
 };
 
 
-#endif /* INCLUDES_MODBUS_ABBDRIVE_H_ */
+#endif /* INCLUDES_MODBUS_AbbDrive_H_ */

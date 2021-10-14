@@ -21,7 +21,7 @@
 #include <atomic>
 #include <cstring>
 #include <string>
-#include "modbus/ABBDrive.h"
+#include "modbus/AbbDrive.h"
 #include "uart/LpcUart.h" // Remove after debugging finished
 #include "I2C/I2C.h"
 #include "I2C/SDPSensor.h"
@@ -42,7 +42,7 @@
 
 /* FUNCTION DEFINITIONS */
 void set_systick(const int& freq);
-std::string construct_json(const int& len, std::string* keys, std::string* values);
+//std::string construct_json(const int& len, std::string* keys, std::string* values);
 
 /* INTERRUPT HANDLERS */
 static volatile std::atomic_int delay(0);
@@ -85,7 +85,7 @@ int main(void) {
 	LpcUart uart(cfg);
 
     /* Configure frequency controller */
-    ABBDrive abb_drive;
+    AbbDrive abb_drive;
 
     /* Configure MQTT */
     MQTT mqtt;
@@ -95,25 +95,31 @@ int main(void) {
 	/* Test values remove after debugging */
 	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
 
-	/* Main scope variables block */
-	std::string json_keys[JSON_LEN] = { "ts", "freq", "pressure" };
-	std::string json_values[JSON_LEN];
-
 	delay_systick(100);
 
+	char mes[] = "Hi, mqtt!";
+
     /* Main polling loop */
+	// TODO: Menu + button interrupts (already implemented in class)
+	// TODO: JSON parsing
+	// TODO: State machine (leave on Pavel, interested in doing it)
     while(1) {
+    	// Read pressure example
+    	// Should be compared against error code:
+    	// pressure_sensor.read() != SDP_ERR
     	int16_t pressure = pressure_sensor.read();
     	uart.write(std::to_string(pressure) + "\r\n");
 
-    	mqtt.publish("/iot/grp1", construct_json(JSON_LEN, json_keys, json_values), strlen(mes));
+    	// Mqtt publishing. Status code return should always be checked and reconnected if needed:
+    	// e.g. mqtt.publish == 0 - OK
+    	mqtt.publish("/iot/grp1", mes, strlen(mes));
     	uart.write(std::to_string(mqtt.get_status()) + "\r\n");
 
+    	// Access abb drive to wake up from idle state if needed
     	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
 
     	delay_systick(5000);
     }
-
 
     return 0;
 }
@@ -150,6 +156,7 @@ void delay_systick(const int ticks)
  * @param values Values for key-value pairs
  * @return Pointer to newly constructed string
  */
+/*
 char* construct_json(const int& len, std::string* keys, std::string* values)
 {
 	char json[MQTT_BUF_LEN];
@@ -163,10 +170,8 @@ char* construct_json(const int& len, std::string* keys, std::string* values)
 
 	return json;
 }
-
-void update_values(json) {
-
-}
+void update_values(json) {}
+*/
 
 /**
  * @brief Arduino's millis function implementation
