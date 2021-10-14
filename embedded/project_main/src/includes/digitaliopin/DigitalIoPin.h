@@ -1,7 +1,6 @@
 #ifndef DIGITALIOPIN_H_
 #define DIGITALIOPIN_H_
 
-
 class DigitalIoPin {
 public:
 	DigitalIoPin(const int& port, const int& pin, const bool& input = false,
@@ -10,12 +9,14 @@ public:
 	virtual ~DigitalIoPin() {};
 	bool read();
 	void write(bool value);
+	void enable_interrupt(const int& pin_irq_index);
+
+	static void init_gpio_interrupts();
 private:
 	const int io_port;
 	const int io_pin;
 	const bool is_input;
 	const bool is_invert;
-
 	void init_as_input(const bool& pullup);
 	void init_as_output();
 };

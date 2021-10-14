@@ -1,6 +1,5 @@
-#include "DigitalIoPin.h"
-
 #include "chip.h"
+#include "headers/digitaliopin.h"
 
 /**
  * @brief Initialize IO pin
@@ -63,7 +62,7 @@ bool DigitalIoPin::read()
 
 /**
  * @brief Write state of the output pin
- * @param value Target state
+ * No effect for input.
  */
 void DigitalIoPin::write(bool value)
 {
@@ -71,4 +70,38 @@ void DigitalIoPin::write(bool value)
 	if (is_invert) value = !value;
 
 	Chip_GPIO_SetPinState(LPC_GPIO, io_port, io_pin, value);
+}
+
+/**
+ * @brief Configure interrupt channel for the GPIO pin in INMUX block
+ * Has no effect on output
+ * @param pin_irq_index PININT index used for GPIO mapping
+ */
+void DigitalIoPin::enable_interrupt(const int& pin_irq_index)
+{
+	if (!is_input) return;
+	if (pin_irq_index < 0 || pin_irq_index > 7) return;
+
+	Chip_INMUX_PinIntSel(pin_irq_index, io_port, io_pin);
+
+	/* Configure channel interrupt as edge sensitive and falling edge interrupt */
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(pin_irq_index));
+	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(pin_irq_index));
+	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(pin_irq_index));
+
+	/* Enable interrupt in the NVIC */
+	NVIC_ClearPendingIRQ((IRQn_Type)(PIN_INT0_IRQn + pin_irq_index));
+	NVIC_EnableIRQ((IRQn_Type)(PIN_INT0_IRQn + pin_irq_index));
+}
+
+/**
+ * @brief Initialize pin interrupt
+ * Static, effects entire system
+ */
+void DigitalIoPin::init_gpio_interrupts()
+{
+	/* Initialize PININT driver */
+	Chip_PININT_Init(LPC_GPIO_PIN_INT);
+	Chip_Clock_EnablePeriphClock(SYSCTL_CLOCK_PININT);
+	Chip_SYSCTL_PeriphReset(RESET_PININT);
 }
