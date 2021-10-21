@@ -33,12 +33,17 @@ mqtt_client.on('message', async function (topic, message) {
     let input = JSON.parse(message)
     console.log(input)
     io.emit("stats", input);
+
+    // todo:
+    // * Add data to DB
 });
 
 // WebSocket conf
 io.on("connection", (socket) => {
     console.log("New connection: "+socket.id); 
 });
+
+// io.on("update")
 
 // Passport config
 require('./config/passport')(passport);
