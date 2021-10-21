@@ -10,9 +10,9 @@
 
 #include "I2C.h"
 
-class SDPSensor {
+class SdpSensor {
 public:
-	SDPSensor(
+	SdpSensor(
 		I2C* i2c_,
 		const int scaling_factor_ = SDP6X0125_SCALING,
 		const float altitude_corr_ = DEFAULT_ALT_FACTOR
@@ -25,6 +25,5 @@ private:
 
 	int16_t transfer_function(uint8_t* reading);
 };
-
 
 #endif

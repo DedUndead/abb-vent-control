@@ -26,6 +26,9 @@
 #include "I2C/I2C.h"
 #include "I2C/SDPSensor.h"
 #include "mqtt/MQTT.h"
+#include "menu/SimpleMenu.h"
+#include "menu/IntegerEdit.h"
+#include "vent/SmartVent.h"
 #include "delay.h"
 
 /* MACROS, CONSTANTS */
@@ -42,23 +45,34 @@
 
 /* FUNCTION DEFINITIONS */
 void set_systick(const int& freq);
-//std::string construct_json(const int& len, std::string* keys, std::string* values);
 
-/* INTERRUPT HANDLERS */
+/* INTERRUPT HANDLERS AND SHARED VARIABLES */
 static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
-#ifdef __cplusplus
-extern "C" {
-#endif
-void SysTick_Handler(void)
-{
-	systicks++;
-	if (delay > 0)  delay--;
-}
-#ifdef __cplusplus
-}
-#endif
+static SimpleMenu* menu_ptr(nullptr);
 
+extern "C" {
+	void SysTick_Handler(void)
+	{
+		systicks++;
+		if (delay > 0)  delay--;
+	}
+
+	void PIN_INT0_IRQHandler(void)
+	{
+		menu_ptr->event(MenuItem::up);
+	}
+
+	void PIN_INT1_IRQHandler(void)
+	{
+		menu_ptr->event(MenuItem::ok);
+	}
+
+	void PIN_INT2_IRQHandler(void)
+	{
+		menu_ptr->event(MenuItem::down);
+	}
+}
 
 /* MAIN PROGRAM BODY */
 int main(void) {
@@ -69,9 +83,6 @@ int main(void) {
     Board_Init();
 #endif
 #endif
-
-    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, 0);
-    SDPSensor pressure_sensor(&i2c);
 
     /* Configure systick and RIT timers */
     set_systick(SYSTICKRATE_HZ);
@@ -84,7 +95,45 @@ int main(void) {
 	LpcUartConfig cfg = { LPC_USART0, 115200, UART_CFG_DATALEN_8 | UART_CFG_PARITY_NONE | UART_CFG_STOPLEN_1, false, txpin, rxpin, none, none };
 	LpcUart uart(cfg);
 
-    /* Configure frequency controller */
+    /* LCD initialization */
+    DigitalIoPin rs(0, 10);
+    DigitalIoPin en(0, 9);
+    DigitalIoPin d4(1, 8);
+    DigitalIoPin d5(0, 5);
+    DigitalIoPin d6(0, 6);
+    DigitalIoPin d7(0, 7);
+    LiquidCrystal lcd(&rs, &en, &d4, &d5, &d6, &d7);
+
+    /* Menu initialization */
+    SimpleMenu menu;
+    IntegerEdit mode(&lcd, std::string("Mode"), 1, 0, 1);
+    IntegerEdit freq(&lcd, std::string("Frequency"), 22000, 0, 1000);
+    IntegerEdit pressure(&lcd, std::string("Pressure"), 120, 0, 1);
+    menu.addItem(new MenuItem(&mode));
+    menu.addItem(new MenuItem(&freq));
+    menu.addItem(new MenuItem(&pressure));
+    menu_ptr = &menu;
+
+    /* Initial menu value */
+    mode.setValue(0);
+    freq.setValue(0);
+    pressure.setValue(0);
+
+    /* Menu buttons */
+    DigitalIoPin up(0, 24, true, true, true);
+    DigitalIoPin ok(0, 0, true, true, true);
+    DigitalIoPin down(1, 3, true, true, true);
+    delay_systick(100);
+
+    /* I/O interrupts initialization */
+    DigitalIoPin::init_gpio_interrupts();
+    up.enable_interrupt(0);
+    ok.enable_interrupt(1);
+    down.enable_interrupt(2);
+
+    /* Peripherals initialization */
+    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, 0);
+    SdpSensor pressure_sensor(&i2c);
     AbbDrive abb_drive;
 
     /* Configure MQTT */
@@ -92,33 +141,8 @@ int main(void) {
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
     uart.write(std::to_string(mqtt.get_status()) + "\r\n");
 
-	/* Test values remove after debugging */
-	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
-
-	delay_systick(100);
-
-	char mes[] = "Hi, mqtt!";
-
     /* Main polling loop */
-	// TODO: Menu + button interrupts (already implemented in class)
-	// TODO: JSON parsing
-	// TODO: State machine (leave on Pavel, interested in doing it)
-    while(1) {
-    	// Read pressure example
-    	// Should be compared against error code:
-    	// pressure_sensor.read() != SDP_ERR
-    	int16_t pressure = pressure_sensor.read();
-    	uart.write(std::to_string(pressure) + "\r\n");
-
-    	// Mqtt publishing. Status code return should always be checked and reconnected if needed:
-    	// e.g. mqtt.publish == 0 - OK
-    	mqtt.publish("/iot/grp1", mes, strlen(mes));
-    	uart.write(std::to_string(mqtt.get_status()) + "\r\n");
-
-    	// Access abb drive to wake up from idle state if needed
-    	if (abb_drive.get_frequency() < 1000) abb_drive.set_frequency(15000);
-
-    	delay_systick(5000);
+    while (true) {
     }
 
     return 0;
@@ -148,35 +172,9 @@ void delay_systick(const int ticks)
 	}
 }
 
-// Should be moved to a separate JSON class
 /**
- * @brief Construct json-like string
- * @param len    Number pf lines
- * @param keys   Keys for key-value pairs
- * @param values Values for key-value pairs
- * @return Pointer to newly constructed string
- */
-/*
-char* construct_json(const int& len, std::string* keys, std::string* values)
-{
-	char json[MQTT_BUF_LEN];
-	std::string lines("");
-
-	for (int i = 0; i < len; i++) {
-		lines += key[i] + ':' + value[i] + '\n';
-	}
-
-	sprintf(json, "{%s}", lines.c_str());
-
-	return json;
-}
-void update_values(json) {}
-*/
-
-/**
- * @brief Arduino's millis function implementation
- * Used in modbus
- * @return Number of milliseconds from the beginning of the program
+ * @brief Return time elapsed from program start
+ * @return Time in ms
  */
 uint32_t millis()
 {

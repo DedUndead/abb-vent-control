@@ -1,4 +1,4 @@
-#include "SDPSensor.h"
+#include "SdpSensor.h"
 #include "I2C.h"
 
 /**
@@ -8,7 +8,7 @@
  * @param i2c_           Pointer to I2C interface
  * @param scaling_factor Transfer function scaling factor, Pa-1
  */
-SDPSensor::SDPSensor(I2C* i2c_, const int scaling_factor_, const float altitude_corr_) :
+SdpSensor::SdpSensor(I2C* i2c_, const int scaling_factor_, const float altitude_corr_) :
 		i2c(i2c_),
 		scaling_factor(scaling_factor_),
 		altitude_corr(altitude_corr_)
@@ -19,7 +19,7 @@ SDPSensor::SDPSensor(I2C* i2c_, const int scaling_factor_, const float altitude_
  * Convert raw data to pressure using transfer function
  * @return Pressure on success, SDP error status on fail
  */
-int16_t SDPSensor::read()
+int16_t SdpSensor::read()
 {
 	uint8_t rx_buffer[READ_BUFFER_SIZE];
 
@@ -43,7 +43,7 @@ int16_t SDPSensor::read()
  * @param  reading Raw reading
  * @return         Pressure value derived from raw reading
  */
-int16_t SDPSensor::transfer_function(uint8_t* reading)
+int16_t SdpSensor::transfer_function(uint8_t* reading)
 {
 	int16_t pressure;
 

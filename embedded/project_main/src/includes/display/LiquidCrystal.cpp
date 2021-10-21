@@ -167,16 +167,26 @@ void LiquidCrystal::home()
  * @brief Print string to the screen, starting from the first line
  * @param s String
  */
-void LiquidCrystal::print(std::string const &s)
+void LiquidCrystal::print(std::string const& s, const int cursor_start)
 {
-	print(s.c_str());
+	print(s.c_str(), cursor_start);
 }
-void LiquidCrystal::print(const char *s)
+void LiquidCrystal::print(const char* s, const int cursor_start)
 {
-	for (int i = 0; s[i] != '\0' && i < 32; i++) {
-		if (i < 16) setCursor(0, i);
-		else 		setCursor(1, i-16);
+	int row = 0, column = cursor_start;
+
+	if (cursor_start >= 16) {
+		 row++;
+		 while (column >= 16) column -= 16;
+	}
+
+	for (int i = 0; s[i] != '\0' && row < 3; i++) {
+		setCursor(row, column);
 		write(s[i]);
+
+		column++;
+		if (column == 16) row++;
+		if (column >= 16) column -= 16;
 	}
 }
 

@@ -8,24 +8,24 @@ LiquidCrystal.cpp:49:1:LiquidCrystal::LiquidCrystal(DigitalIoPin*, DigitalIoPin*
 LiquidCrystal.cpp:71:6:void LiquidCrystal::begin(uint8_t, uint8_t, uint8_t)	16	static
 LiquidCrystal.cpp:150:6:void LiquidCrystal::clear()	16	static
 LiquidCrystal.cpp:159:6:void LiquidCrystal::home()	16	static
-LiquidCrystal.cpp:170:6:void LiquidCrystal::print(const string&)	16	static
-LiquidCrystal.cpp:174:6:void LiquidCrystal::print(const char*)	24	static
-LiquidCrystal.cpp:189:6:void LiquidCrystal::setCursor(uint8_t, uint8_t)	40	static
-LiquidCrystal.cpp:202:6:void LiquidCrystal::noDisplay()	16	static
-LiquidCrystal.cpp:211:6:void LiquidCrystal::display()	16	static
-LiquidCrystal.cpp:220:6:void LiquidCrystal::noCursor()	16	static
-LiquidCrystal.cpp:229:6:void LiquidCrystal::cursor()	16	static
-LiquidCrystal.cpp:238:6:void LiquidCrystal::noBlink()	16	static
-LiquidCrystal.cpp:247:6:void LiquidCrystal::blink()	16	static
-LiquidCrystal.cpp:256:6:void LiquidCrystal::scrollDisplayLeft()	16	static
-LiquidCrystal.cpp:264:6:void LiquidCrystal::scrollDisplayRight()	16	static
-LiquidCrystal.cpp:272:6:void LiquidCrystal::leftToRight()	16	static
-LiquidCrystal.cpp:281:6:void LiquidCrystal::rightToLeft()	16	static
-LiquidCrystal.cpp:290:6:void LiquidCrystal::autoscroll()	16	static
-LiquidCrystal.cpp:299:6:void LiquidCrystal::noAutoscroll()	16	static
-LiquidCrystal.cpp:307:6:void LiquidCrystal::createChar(uint8_t, uint8_t*)	32	static
-LiquidCrystal.cpp:318:13:void LiquidCrystal::command(uint8_t)	16	static
-LiquidCrystal.cpp:322:15:virtual size_t LiquidCrystal::write(uint8_t)	16	static
-LiquidCrystal.cpp:330:6:void LiquidCrystal::send(uint8_t, uint8_t)	16	static
-LiquidCrystal.cpp:337:6:void LiquidCrystal::pulseEnable()	16	static
-LiquidCrystal.cpp:346:6:void LiquidCrystal::write4bits(uint8_t)	24	static
+LiquidCrystal.cpp:170:6:void LiquidCrystal::print(const string&, int)	24	static
+LiquidCrystal.cpp:174:6:void LiquidCrystal::print(const char*, int)	40	static
+LiquidCrystal.cpp:199:6:void LiquidCrystal::setCursor(uint8_t, uint8_t)	40	static
+LiquidCrystal.cpp:212:6:void LiquidCrystal::noDisplay()	16	static
+LiquidCrystal.cpp:221:6:void LiquidCrystal::display()	16	static
+LiquidCrystal.cpp:230:6:void LiquidCrystal::noCursor()	16	static
+LiquidCrystal.cpp:239:6:void LiquidCrystal::cursor()	16	static
+LiquidCrystal.cpp:248:6:void LiquidCrystal::noBlink()	16	static
+LiquidCrystal.cpp:257:6:void LiquidCrystal::blink()	16	static
+LiquidCrystal.cpp:266:6:void LiquidCrystal::scrollDisplayLeft()	16	static
+LiquidCrystal.cpp:274:6:void LiquidCrystal::scrollDisplayRight()	16	static
+LiquidCrystal.cpp:282:6:void LiquidCrystal::leftToRight()	16	static
+LiquidCrystal.cpp:291:6:void LiquidCrystal::rightToLeft()	16	static
+LiquidCrystal.cpp:300:6:void LiquidCrystal::autoscroll()	16	static
+LiquidCrystal.cpp:309:6:void LiquidCrystal::noAutoscroll()	16	static
+LiquidCrystal.cpp:317:6:void LiquidCrystal::createChar(uint8_t, uint8_t*)	32	static
+LiquidCrystal.cpp:328:13:void LiquidCrystal::command(uint8_t)	16	static
+LiquidCrystal.cpp:332:15:virtual size_t LiquidCrystal::write(uint8_t)	16	static
+LiquidCrystal.cpp:340:6:void LiquidCrystal::send(uint8_t, uint8_t)	16	static
+LiquidCrystal.cpp:347:6:void LiquidCrystal::pulseEnable()	16	static
+LiquidCrystal.cpp:356:6:void LiquidCrystal::write4bits(uint8_t)	24	static

@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <string>
 #include "chip.h"
-
 #include "digitaliopin/DigitalIoPin.h"
 
 // commands
@@ -74,8 +73,8 @@ public:
   void setCursor(uint8_t, uint8_t);
   virtual size_t write(uint8_t);
   void command(uint8_t);
-  void print(std::string const &s);
-  void print(const char *s);
+  void print(std::string const& s, const int cursor_start = 0);
+  void print(const char* s, const int cursor_start = 0);
 
 private:
   void send(uint8_t, uint8_t);
