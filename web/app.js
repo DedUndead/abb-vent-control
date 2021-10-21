@@ -40,10 +40,19 @@ mqtt_client.on('message', async function (topic, message) {
 
 // WebSocket conf
 io.on("connection", (socket) => {
-    console.log("New connection: "+socket.id); 
-});
+    console.log("New connection: "+socket.id);
 
-// io.on("update")
+    // Handle updates from client
+    socket.on('update', function (data) {
+        console.log("Got Data from client: " + JSON.stringify(data));
+
+        // todo:
+        // * parse and transform data
+        // * publish serialized data on MQTT
+
+        mqtt_client.publish('client_update', "test_data");
+    });
+});
 
 // Passport config
 require('./config/passport')(passport);
