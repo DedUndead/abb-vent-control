@@ -6,13 +6,23 @@
 #include "modbus/AbbDrive.h"
 #include "Event.h"
 
+#define SDP_ERR 0x1F5
+
 class SmartVent;
+
 typedef void (SmartVent::*state_ptr)(const Event &);
+typedef struct status {
+	int mode;
+	int frequency;
+	int pressure;
+} status;
 
 class SmartVent {
 public:
 	SmartVent(SdpSensor* sdp_, AbbDrive* drive_);
 	void handle_state(const Event& e);
+	status get_status();
+
 	enum mode { mAuto, mManual };
 private:
 	state_ptr current_state;
@@ -23,11 +33,12 @@ private:
 	void mqtt_parse(const Event& e);
 	void set_pressure(const Event& e);
 	//void set_freq(state_ptr new_state);
+	int read_pressure();
 
 	int timer;
-	mode mode;
 	SdpSensor* sdp;
 	AbbDrive* drive;
+	status current_status;
 };
 
 

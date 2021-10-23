@@ -4,16 +4,28 @@
 #include "SmartVent.h"
 
 SmartVent::SmartVent(SdpSensor* sdp_, AbbDrive* drive_) :
-	mode(mAuto),
 	sdp(sdp_),
 	drive(drive_)
 {
 	set_state(&SmartVent::startup);
+
+	current_status.mode = mAuto;
+	current_status.frequency = drive->get_frequency();
+	current_status.pressure = read_pressure();
 }
 
 void SmartVent::handle_state(const Event& e)
 {
 	(this->*current_state)(e);
+}
+
+/**
+ * @brief Obtain current values inside state machine
+ * @return Current values in status structure format
+ */
+status SmartVent::get_status()
+{
+	return current_status;
 }
 
 void SmartVent::set_state(state_ptr new_state)
@@ -73,4 +85,16 @@ void SmartVent::set_pressure(const Event& e)
 	default:
 		break;
 	}
+}
+
+/**
+ * @brief Read pressure from SDP sensor
+ * @return 0 (neural value for the current class) if error, otherwise reading
+ */
+int SmartVent::read_pressure()
+{
+	int result = sdp->read();
+
+	if (result == SDP_ERR) return 0;
+	else				   return result;
 }

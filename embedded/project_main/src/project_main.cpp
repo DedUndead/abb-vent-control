@@ -35,7 +35,6 @@
 #define SYSTICKRATE_HZ 1000
 #define I2C_CLOCKDIV   72000000 / 1000000
 #define I2C_BITRATE    1000000
-#define SDP_ERR        0x1F5
 #define MQTT_IP        (char *)"18.198.188.151"
 #define MQTT_PORT      21883
 #define NETWORK_SSID   (char *)"V46D-1"
@@ -60,16 +59,21 @@ extern "C" {
 
 	void PIN_INT0_IRQHandler(void)
 	{
+		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
+
 		menu_ptr->event(MenuItem::up);
 	}
 
 	void PIN_INT1_IRQHandler(void)
 	{
+		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
+
 		menu_ptr->event(MenuItem::ok);
 	}
 
 	void PIN_INT2_IRQHandler(void)
-	{
+	{		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+
 		menu_ptr->event(MenuItem::down);
 	}
 }
@@ -83,6 +87,10 @@ int main(void) {
     Board_Init();
 #endif
 #endif
+
+    /* Pressure sensor initialization */
+    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, 0);
+    SdpSensor pressure_sensor(&i2c);
 
     /* Configure systick and RIT timers */
     set_systick(SYSTICKRATE_HZ);
@@ -118,6 +126,7 @@ int main(void) {
     mode.setValue(0);
     freq.setValue(0);
     pressure.setValue(0);
+    menu.event(MenuItem::show);
 
     /* Menu buttons */
     DigitalIoPin up(0, 24, true, true, true);
@@ -131,9 +140,7 @@ int main(void) {
     ok.enable_interrupt(1);
     down.enable_interrupt(2);
 
-    /* Peripherals initialization */
-    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, 0);
-    SdpSensor pressure_sensor(&i2c);
+    /* Drive peripheral */
     AbbDrive abb_drive;
 
     /* Configure MQTT */
@@ -143,6 +150,7 @@ int main(void) {
 
     /* Main polling loop */
     while (true) {
+    	delay_systick(5);
     }
 
     return 0;
