@@ -17,12 +17,13 @@ SmartVent::SmartVent(SdpSensor* sdp_, AbbDrive* drive_) :
 	sdp(sdp_),
 	drive(drive_)
 {
-	set_state(&SmartVent::startup);
+	set_state(&SmartVent::mode_manual);
 
 	current_status.mode = mManual;
 	current_status.operation_status = STATUS_OK;
 	current_status.frequency = drive->get_frequency();
 	current_status.pressure = read_pressure();
+	current_status.target_pressure = 0;
 }
 
 void SmartVent::handle_state(const Event& e)
@@ -193,9 +194,11 @@ void SmartVent::autoadjust_frequency()
 	// Automatic adjacement
 	if (current_status.pressure > current_status.target_pressure) {
 		target_frequency = current_status.frequency - FREQ_STEP;
+		timer = 0;
 	}
 	else {
 		target_frequency = current_status.frequency + FREQ_STEP;
+		timer = 0;
 	}
 
 	// Sanity check

@@ -8,7 +8,7 @@
 
 class Event {
 public:
-	enum event_type { eEnter, eExit, eTick, eAuto, eManual, eMqtt, ePres, eFreq };
+	enum event_type { eEnter, eExit, eTick, eManual, eAuto, eMqtt, ePres, eFreq };
 	Event(event_type e = eTick, int64_t v = 0) : type(e), value(v) {};
 	event_type type;
 	int64_t value;

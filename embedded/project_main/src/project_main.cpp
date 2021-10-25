@@ -30,14 +30,16 @@
 #include "menu/IntegerEdit.h"
 #include "menu/StringEdit.h"
 #include "vent/SmartVent.h"
+#include "vent/Event.h"
 #include "delay.h"
 
-/* MACROS, CONSTANTS */
+/* MACROS, TYPES */
 #define SYSTICKRATE_HZ 1000
 #define I2C_CLOCKDIV   72000000 / 1000000
 #define I2C_BITRATE    1000000
 #define I2C_MODE       0
 #define DEBOUNCE       20
+#define VENT_TICK_LEN  1000
 #define INITIAL_DELAY  100
 #define MQTT_IP        (char *)"18.198.188.151"
 #define MQTT_PORT      21883
@@ -45,14 +47,21 @@
 #define NETWORK_PASS   (char *)"2483124831"
 #define MQTT_BFR_LEN   240
 #define MENU_LABELS_N  3
-#define FREQ_MAX       25000
+#define FREQ_MAX       22000
 #define FREQ_MIN       0
-#define FREQ_STEP      500
+#define FREQ_STEP      1500
 #define PRES_MAX       120
+#define PRES_MIN       0
 #define PRES_STEP      1
+#define MENU_ITEMS_NUM 3
 
-/* FUNCTION DEFINITIONS */
+/* SUPPORT FUNCTIONS DECLARATIONS */
 void set_systick(const int& freq);
+void observe_lcd_changes(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM], int* last_values);
+void handle_mode(SmartVent* ventilation, int mode);
+void handle_freq(SmartVent* ventilation, int freq);
+void handle_pressure(SmartVent* ventilation, int pressure);
+void (*lcd_handlers[MENU_ITEMS_NUM])(SmartVent*, int) = { handle_mode, handle_freq, handle_pressure };
 
 /* INTERRUPT HANDLERS AND SHARED VARIABLES */
 static volatile std::atomic_int delay(0);
@@ -140,19 +149,25 @@ int main(void) {
 
     /* Menu initialization */
     SimpleMenu menu;
+
     std::string labels[MENU_LABELS_N] = { "Manual", "Automatic" };
     StringEdit mode(&lcd, std::string("Mode"), labels, MENU_LABELS_N);
     IntegerEdit freq(&lcd, std::string("Frequency"), FREQ_MAX, FREQ_MIN, FREQ_STEP);
     IntegerEdit pressure(&lcd, std::string("Pressure"), PRES_MAX, PRES_MIN, PRES_STEP);
+
     menu.addItem(new MenuItem(&mode));
     menu.addItem(new MenuItem(&freq));
     menu.addItem(new MenuItem(&pressure));
+
     menu_ptr = &menu;
 
     /* Initial menu value */
     mode.setValue(0);
     freq.setValue(0);
     pressure.setValue(0);
+
+    PropertyEdit* menu_items[MENU_ITEMS_NUM] = { &mode, &freq, &pressure };
+    int last_values[MENU_ITEMS_NUM] = { 0, 0, 0 };
     menu.event(MenuItem::show);
 
     /* Menu buttons */
@@ -160,7 +175,7 @@ int main(void) {
     DigitalIoPin ok(0, 0, true, true, true);
     DigitalIoPin down(0, 24, true, true, true);
 
-    delay_systick(INITIAL_DELEAY); // Wait for the current to settle
+    delay_systick(INITIAL_DELAY); // Wait for the current to settle
 
     /* I/O interrupts initialization */
     DigitalIoPin::init_gpio_interrupts();
@@ -173,13 +188,79 @@ int main(void) {
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
     uart.write(std::to_string(mqtt.get_status()) + "\r\n");
 
+    /* Initialize main state machine */
+    SmartVent ventilation(&pressure_sensor, &abb_drive);
+
     /* Main polling loop */
     while (true) {
-    	mode.setValue(1);
-    	delay_systick(5);
+    	// Observe changes in LCD UI
+    	observe_lcd_changes(&ventilation, menu_items, last_values);
+
+    	if (millis() % VENT_TICK_LEN == 0) {
+    		ventilation.handle_state(Event(Event::eTick));
+
+    		status status = ventilation.get_status();
+			uart.write("Frequency: " + std::to_string(status.frequency) + "\r\n");
+			uart.write("Pressure: " + std::to_string(status.pressure) + "\r\n");
+			uart.write("Mode: " + std::to_string(status.mode) + "\r\n");
+			uart.write("Status: " + std::to_string(status.operation_status) + "\r\n");
+			uart.write("Target pressure: " + std::to_string(status.target_pressure) + "\r\n\r\n");
+    	}
     }
 
     return 0;
+}
+
+/* SUPPORT FUNCTIONS DEFINITIONS */
+
+/**
+ * @brief Observe user inputs in LCD
+ * If any present, call the respective handler
+ */
+void observe_lcd_changes(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM], int* last_values)
+{
+	for (int i = 0; i < MENU_ITEMS_NUM; i++) {
+		if (items[i]->getValue() != last_values[i]) {
+			last_values[i] = items[i]->getValue(); // Update last value
+			(*lcd_handlers[i])(ventilation, last_values[i]); // Call handler
+		}
+	}
+}
+
+/**
+ * @brief Mode handler
+ * Send event to switch to mode specified by the user
+ */
+void handle_mode(SmartVent* ventilation, int value)
+{
+	if (value == SmartVent::mManual) {
+		ventilation->handle_state(Event(Event::eManual));
+	}
+	else {
+		ventilation->handle_state(Event(Event::eAuto));
+	}
+}
+
+/**
+ * @brief Frequency handler
+ * Send event to set frequency specified by the user
+ * Skip if mode is automatic
+ */
+void handle_freq(SmartVent* ventilation, int freq)
+{
+	if (ventilation->get_status().mode == SmartVent::mAuto) return;
+	ventilation->handle_state(Event(Event::eFreq, freq));
+}
+
+/**
+ * @brief Pressure handler
+ * Send event to set target pressure specified by the user
+ * Skip if more is manual
+ */
+void handle_pressure(SmartVent* ventilation, int pressure)
+{
+	if (ventilation->get_status().mode == SmartVent::mManual) return;
+	ventilation->handle_state(Event(Event::ePres, pressure));
 }
 
 /**
@@ -204,11 +285,6 @@ void delay_systick(const int ticks)
 	while (delay > 0) {
 		__WFI();
 	}
-}
-
-bool menu_changed()
-{
-
 }
 
 /**

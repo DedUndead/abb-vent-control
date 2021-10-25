@@ -12,7 +12,7 @@
 #define STATUS_FAIL    -1
 #define STATUS_TIMEOUT -2
 #define FREQ_STEP	    500
-#define PRES_ERROR      1
+#define PRES_ERROR      0
 #define MAX_FREQ		30000
 #define MIN_FREQ		0
 
@@ -33,7 +33,7 @@ public:
 	void handle_state(const Event& e);
 	status get_status();
 
-	enum mode { mAuto, mManual };
+	enum mode { mManual, mAuto };
 private:
 	state_ptr current_state;
 	void set_state(state_ptr new_state);
