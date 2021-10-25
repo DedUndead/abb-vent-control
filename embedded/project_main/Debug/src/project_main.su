@@ -5,14 +5,15 @@ pinint_15xx.h:245:20:void Chip_PININT_ClearIntStatus(LPC_PIN_INT_T*, uint32_t)	1
 atomic_base.h:99:3:constexpr std::memory_order std::operator&(std::memory_order, std::__memory_order_modifier)	16	static
 gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
 basic_string.h:6546:3:std::string std::__cxx11::to_string(int)	24	static
-project_main.cpp:54:7:void SysTick_Handler()	8	static
-project_main.cpp:60:7:void PIN_INT0_IRQHandler()	8	static
-project_main.cpp:67:7:void PIN_INT1_IRQHandler()	8	static
-project_main.cpp:74:7:void PIN_INT2_IRQHandler()	8	static
-project_main.cpp:82:5:int main()	4520	static
-project_main.cpp:163:6:void set_systick(const int&)	24	static
-project_main.cpp:175:6:void delay_systick(int)	16	static
-project_main.cpp:187:10:uint32_t millis()	4	static
+project_main.cpp:57:7:void SysTick_Handler()	8	static
+project_main.cpp:63:7:void PIN_INT0_IRQHandler()	8	static
+project_main.cpp:74:7:void PIN_INT1_IRQHandler()	8	static
+project_main.cpp:85:7:void PIN_INT2_IRQHandler()	8	static
+project_main.cpp:98:5:int main()	4576	static
+project_main.cpp:181:6:void set_systick(const int&)	24	static
+project_main.cpp:193:6:void delay_systick(int)	16	static
+project_main.cpp:201:6:bool menu_changed()	4	static
+project_main.cpp:210:10:uint32_t millis()	4	static
 string_conversions.h:99:5:) [with _String = std::__cxx11::basic_string<char>; _CharT = char]	44	dynamic
 atomic_base.h:284:7:std::__atomic_base<_IntTp>::operator std::__atomic_base<_IntTp>::__int_type() const volatile [with _ITp = int]	24	static
 atomic_base.h:314:7:std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::operator--(int) volatile [with _ITp = int]	32	static

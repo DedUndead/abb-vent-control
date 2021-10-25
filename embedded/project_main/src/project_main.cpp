@@ -28,6 +28,7 @@
 #include "mqtt/MQTT.h"
 #include "menu/SimpleMenu.h"
 #include "menu/IntegerEdit.h"
+#include "menu/StringEdit.h"
 #include "vent/SmartVent.h"
 #include "delay.h"
 
@@ -35,12 +36,20 @@
 #define SYSTICKRATE_HZ 1000
 #define I2C_CLOCKDIV   72000000 / 1000000
 #define I2C_BITRATE    1000000
+#define I2C_MODE       0
+#define DEBOUNCE       20
+#define INITIAL_DELAY  100
 #define MQTT_IP        (char *)"18.198.188.151"
 #define MQTT_PORT      21883
 #define NETWORK_SSID   (char *)"V46D-1"
 #define NETWORK_PASS   (char *)"2483124831"
 #define MQTT_BFR_LEN   240
-#define JSON_LEN	   3
+#define MENU_LABELS_N  3
+#define FREQ_MAX       25000
+#define FREQ_MIN       0
+#define FREQ_STEP      500
+#define PRES_MAX       120
+#define PRES_STEP      1
 
 /* FUNCTION DEFINITIONS */
 void set_systick(const int& freq);
@@ -48,6 +57,7 @@ void set_systick(const int& freq);
 /* INTERRUPT HANDLERS AND SHARED VARIABLES */
 static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
+static volatile uint32_t last_pressed(0);
 static SimpleMenu* menu_ptr(nullptr);
 
 extern "C" {
@@ -61,6 +71,10 @@ extern "C" {
 	{
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(0));
 
+		// Button debounce
+		if (millis() - last_pressed < DEBOUNCE) return;
+		last_pressed = millis();
+
 		menu_ptr->event(MenuItem::up);
 	}
 
@@ -68,12 +82,20 @@ extern "C" {
 	{
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(1));
 
+		// Button debounce
+		if (millis() - last_pressed < DEBOUNCE) return;
+		last_pressed = millis();
+
 		menu_ptr->event(MenuItem::ok);
 	}
 
 	void PIN_INT2_IRQHandler(void)
 	{
 		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+
+		// Button debounce
+		if (millis() - last_pressed < DEBOUNCE) return;
+		last_pressed = millis();
 
 		menu_ptr->event(MenuItem::down);
 	}
@@ -90,7 +112,7 @@ int main(void) {
 #endif
 
     /* Pressure sensor initialization */
-    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, 0);
+    I2C i2c(I2C_CLOCKDIV, I2C_BITRATE, I2C_MODE);
     SdpSensor pressure_sensor(&i2c);
 
     /* Configure systick and RIT timers */
@@ -118,9 +140,10 @@ int main(void) {
 
     /* Menu initialization */
     SimpleMenu menu;
-    IntegerEdit mode(&lcd, std::string("Mode"), 1, 0, 1);
-    IntegerEdit freq(&lcd, std::string("Frequency"), 22000, 0, 1000);
-    IntegerEdit pressure(&lcd, std::string("Pressure"), 120, 0, 1);
+    std::string labels[MENU_LABELS_N] = { "Manual", "Automatic" };
+    StringEdit mode(&lcd, std::string("Mode"), labels, MENU_LABELS_N);
+    IntegerEdit freq(&lcd, std::string("Frequency"), FREQ_MAX, FREQ_MIN, FREQ_STEP);
+    IntegerEdit pressure(&lcd, std::string("Pressure"), PRES_MAX, PRES_MIN, PRES_STEP);
     menu.addItem(new MenuItem(&mode));
     menu.addItem(new MenuItem(&freq));
     menu.addItem(new MenuItem(&pressure));
@@ -133,10 +156,11 @@ int main(void) {
     menu.event(MenuItem::show);
 
     /* Menu buttons */
-    DigitalIoPin up(0, 24, true, true, true);
+    DigitalIoPin up(1, 3, true, true, true);
     DigitalIoPin ok(0, 0, true, true, true);
-    DigitalIoPin down(1, 3, true, true, true);
-    delay_systick(100);
+    DigitalIoPin down(0, 24, true, true, true);
+
+    delay_systick(INITIAL_DELEAY); // Wait for the current to settle
 
     /* I/O interrupts initialization */
     DigitalIoPin::init_gpio_interrupts();
@@ -151,6 +175,7 @@ int main(void) {
 
     /* Main polling loop */
     while (true) {
+    	mode.setValue(1);
     	delay_systick(5);
     }
 
@@ -179,6 +204,11 @@ void delay_systick(const int ticks)
 	while (delay > 0) {
 		__WFI();
 	}
+}
+
+bool menu_changed()
+{
+
 }
 
 /**

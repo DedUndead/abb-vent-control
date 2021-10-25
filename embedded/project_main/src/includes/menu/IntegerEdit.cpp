@@ -66,10 +66,10 @@ void IntegerEdit::save() {
 	// todo: save current value for example to EEPROM for permanent storage
 }
 
-
 int IntegerEdit::getValue() {
 	return value;
 }
+
 void IntegerEdit::setValue(int value) {
 	edit = value;
 	save();
