@@ -3,13 +3,24 @@
 #include "Event.h"
 #include "SmartVent.h"
 
+/**
+ * Smart ventilation abstraction
+ * Status codes:
+ *  0 - status OK
+ *  1 - status LOADING/UNCOMPLETE
+ * -1 - status FAIL
+ * -2 - status TIMEOUT
+ * Status fail is set if request cannot be fullfilled (e.g. peripheral failure)
+ */
 SmartVent::SmartVent(SdpSensor* sdp_, AbbDrive* drive_) :
+	timer(0),
 	sdp(sdp_),
 	drive(drive_)
 {
 	set_state(&SmartVent::startup);
 
-	current_status.mode = mAuto;
+	current_status.mode = mManual;
+	current_status.operation_status = STATUS_OK;
 	current_status.frequency = drive->get_frequency();
 	current_status.pressure = read_pressure();
 }
@@ -28,6 +39,10 @@ status SmartVent::get_status()
 	return current_status;
 }
 
+/**
+ * @brief Set desired state of state machine
+ * @param new_state Function pointer to new state
+ */
 void SmartVent::set_state(state_ptr new_state)
 {
 	// No exit events
@@ -35,17 +50,31 @@ void SmartVent::set_state(state_ptr new_state)
 	(this->*current_state)(Event(Event::eEnter));
 }
 
+/**
+ * @brief Automatic mode state
+ */
 void SmartVent::mode_auto(const Event& e)
 {
 	switch (e.type) {
 	case Event::eEnter:
+		current_status.target_pressure = current_status.pressure;
+		current_status.mode = mAuto;
+
 		break;
 	case Event::eManual:
 		set_state(&SmartVent::mode_manual);
 
 		break;
 	case Event::ePres:
+		current_status.target_pressure = e.value;
 		set_state(&SmartVent::set_pressure);
+
+		break;
+	case Event::eTick:
+		current_status.pressure = read_pressure();
+		if (!target_reached()) {
+			set_state(&SmartVent::set_pressure);
+		}
 
 		break;
 	default:
@@ -53,17 +82,26 @@ void SmartVent::mode_auto(const Event& e)
 	}
 }
 
+/**
+ * @brief Manual mode state
+ */
 void SmartVent::mode_manual(const Event& e)
 {
 	switch (e.type) {
 	case Event::eEnter:
+		current_status.mode = mManual;
+
 		break;
 	case Event::eAuto:
 		set_state(&SmartVent::mode_auto);
 
 		break;
 	case Event::eFreq:
-		//set_frequency(e.value);
+		set_frequency(e.value);
+
+		break;
+	case Event::eTick:
+		current_status.pressure = read_pressure();
 
 		break;
 	default:
@@ -71,15 +109,44 @@ void SmartVent::mode_manual(const Event& e)
 	}
 }
 
+/**
+ * @brief Setting pressure in automatic mode state
+ */
 void SmartVent::set_pressure(const Event& e)
 {
 	switch (e.type) {
 	case Event::eEnter:
 		timer = 0;
+		current_status.operation_status = STATUS_LOADING;
+
 		break;
 	case Event::eTick:
-		//if (read_pressure()) {}
-		if (timer > 10) {}
+		// Read current pressure
+		current_status.pressure = read_pressure();
+
+		// Check if requested value has been achieved
+		if (!target_reached()) {
+			autoadjust_frequency();
+		}
+		else {
+			set_state(&SmartVent::mode_auto);
+		}
+
+		// Timeout
+		if (timer >= 10) {
+			current_status.operation_status = STATUS_TIMEOUT;
+			set_state(&SmartVent::mode_auto);
+		}
+		timer++;
+
+		break;
+	case Event::ePres:
+		current_status.target_pressure = e.value;
+		timer = 0;
+
+		break;
+	case Event::eManual:
+		set_state(&SmartVent::mode_manual);
 
 		break;
 	default:
@@ -95,6 +162,61 @@ int SmartVent::read_pressure()
 {
 	int result = sdp->read();
 
-	if (result == SDP_ERR) return 0;
-	else				   return result;
+	// Error checking
+	if (result == SDP_ERR) {
+		current_status.operation_status = STATUS_FAIL;
+		return 0;
+	}
+	else {
+		current_status.operation_status = STATUS_OK;
+		return result;
+	}
+}
+
+/**
+ * @brief Calculate if target pressure was reached
+ */
+bool SmartVent::target_reached()
+{
+	return (current_status.pressure <= current_status.target_pressure + PRES_ERROR)
+			&&
+		   (current_status.pressure >= current_status.target_pressure - PRES_ERROR);
+}
+
+/**
+ * @brief Autoadjust frequency depending on current pressure value
+ */
+void SmartVent::autoadjust_frequency()
+{
+	int target_frequency;
+
+	// Automatic adjacement
+	if (current_status.pressure > current_status.target_pressure) {
+		target_frequency = current_status.frequency - FREQ_STEP;
+	}
+	else {
+		target_frequency = current_status.frequency + FREQ_STEP;
+	}
+
+	// Sanity check
+	if (target_frequency > MAX_FREQ) target_frequency = MAX_FREQ;
+	if (target_frequency < MIN_FREQ) target_frequency = MIN_FREQ;
+
+	set_frequency(target_frequency);
+}
+
+/**
+ * @brief Set frequency to desired value
+ * @param value Value in Hz
+ */
+void SmartVent::set_frequency(int value)
+{
+	// Error checking
+	if (!drive->set_frequency(value)) {
+		current_status.operation_status = STATUS_FAIL;
+		return;
+	}
+
+	current_status.operation_status = STATUS_OK;
+	current_status.frequency = value;
 }

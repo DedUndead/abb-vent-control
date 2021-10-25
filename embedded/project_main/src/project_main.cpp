@@ -72,7 +72,8 @@ extern "C" {
 	}
 
 	void PIN_INT2_IRQHandler(void)
-	{		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
+	{
+		Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(2));
 
 		menu_ptr->event(MenuItem::down);
 	}
@@ -95,6 +96,9 @@ int main(void) {
     /* Configure systick and RIT timers */
     set_systick(SYSTICKRATE_HZ);
     Chip_RIT_Init(LPC_RITIMER);
+
+    /* Drive peripheral */
+    AbbDrive abb_drive;
 
     /* Remove after debugging finished */
 	LpcPinMap none = {-1, -1}; // unused pin has negative values in it
@@ -139,9 +143,6 @@ int main(void) {
     up.enable_interrupt(0);
     ok.enable_interrupt(1);
     down.enable_interrupt(2);
-
-    /* Drive peripheral */
-    AbbDrive abb_drive;
 
     /* Configure MQTT */
     MQTT mqtt;
