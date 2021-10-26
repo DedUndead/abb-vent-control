@@ -9,11 +9,12 @@
 #define READ_BUF_LENGTH 2556
 #define MQTT_TIMEOUT    30000
 #define MQTT_VERSION    3
-#define CLIENT_ID       "grp1"
+#define CLIENT_ID       "lpcgrp1"
+
 
 class MQTT {
 public:
-	MQTT();
+	MQTT(void (*message_handler_)(MessageData* data));
 	int connect(const char* ssid, const char* pass, char* ip, int port);
 	void disconnect();
 	int subscribe(const char* topic);
@@ -30,7 +31,7 @@ private:
 	int status;
 	int count;
 
-	static void arrived_message(MessageData* data);
+	void (*message_handler)(MessageData* data);
 };
 
 

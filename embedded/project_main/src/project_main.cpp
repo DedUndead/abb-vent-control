@@ -25,6 +25,7 @@
 #include "uart/LpcUart.h" // Remove after debugging finished
 #include "I2C/I2C.h"
 #include "I2C/SDPSensor.h"
+#include "MQTTClient.h"
 #include "mqtt/MQTT.h"
 #include "menu/SimpleMenu.h"
 #include "menu/IntegerEdit.h"
@@ -60,6 +61,7 @@
 
 /* SUPPORT FUNCTIONS DECLARATIONS */
 const std::string get_sample_json(SmartVent* ventilation, int sample_number);
+void handle_mqtt_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int mode);
@@ -67,6 +69,7 @@ void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM
 void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
 void handle_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
 void set_systick(const int& freq);
+void mqtt_message_handler(MessageData* data);
 
 void (*item_handlers[MENU_ITEMS_NUM])(SmartVent*, PropertyEdit*[MENU_ITEMS_NUM], int) = {
 		handle_mode,
@@ -83,6 +86,8 @@ static volatile uint32_t last_pressed(0);
 static SimpleMenu* menu_ptr(nullptr);
 static volatile bool mqtt_ready(false);
 static volatile bool tick_ready(false);
+static std::string mqtt_message("");
+static bool mqtt_message_arrived(false);
 
 extern "C" {
 	void SysTick_Handler(void)
@@ -206,7 +211,7 @@ int main(void) {
     down.enable_interrupt(2);
 
     /* Configure MQTT */
-    MQTT mqtt;
+    MQTT mqtt(mqtt_message_handler);
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
     mqtt.subscribe(MQTT_TOPIC);
 
@@ -219,6 +224,7 @@ int main(void) {
     	// Obtain event requests from LCD UI
     	handle_lcd_input(&ventilation, menu_items);
 
+    	// Send tick event
     	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
 
@@ -233,12 +239,19 @@ int main(void) {
 			tick_ready = false;
     	}
 
+    	// Obtain sample and send over mqtt
     	if (mqtt_ready) {
     		std::string sample = get_sample_json(&ventilation, sample_number++);
     		int code = mqtt.publish(MQTT_TOPIC, sample, (size_t)sample.length());
     		uart.write("MQTT status: " + std::to_string(code) + "\r\n");
 
     		mqtt_ready = false;
+    	}
+
+    	// Obtain event requests from WEB UI
+    	if (mqtt_message_arrived) {
+    		uart.write(mqtt_message + "\r\n");
+    		handle_mqtt_input(&ventilation, menu_items);
     	}
     }
 
@@ -247,6 +260,12 @@ int main(void) {
 
 /* SUPPORT FUNCTIONS DEFINITIONS */
 
+/**
+ * @brief Construct sample data in JSON format
+ * @param  ventilation   Pointer to target state machine
+ * @param  sample_number Number of sample
+ * @return JSON string
+ */
 const std::string get_sample_json(SmartVent* ventilation, int sample_number)
 {
 	status status = ventilation->get_status();
@@ -260,6 +279,32 @@ const std::string get_sample_json(SmartVent* ventilation, int sample_number)
 	sample["status"] = status.operation_status;
 
 	return sample.dump();
+}
+
+/**
+ * @brief Handle MQTT input, derive events
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to keep them updated with latest changes
+ */
+void handle_mqtt_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM])
+{
+	mqtt_message_arrived = false;
+
+	// Get message in JSON structure and current machine status in status structure
+	status current_status = ventilation->get_status();
+	nlohmann::json settings = nlohmann::json::parse(mqtt_message);
+
+	// Take necessary values from JSON data
+	int new_settings[MENU_ITEMS_NUM - 1] = {
+		settings.value("mode", current_status.mode),
+		settings.value("speed", current_status.frequency),
+		settings.value("setpoint", current_status.target_pressure),
+	};
+
+	// Derive new events from the settings
+	for (int i = 0; i < MENU_ITEMS_NUM - 1; i++) {
+		(*item_handlers[i])(ventilation, items, new_settings[i]); // Call handler
+	}
 }
 
 /**
@@ -427,4 +472,10 @@ void delay_systick(const int ticks)
 uint32_t millis()
 {
 	return systicks;
+}
+
+void mqtt_message_handler(MessageData* data)
+{
+	mqtt_message_arrived = false;
+	mqtt_message = (char*)data->message->payload;
 }

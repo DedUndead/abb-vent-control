@@ -2,10 +2,11 @@
 #include <string>
 
 /**
- * @bried Abstraction for MQTT interface
+ * @brief Abstraction for MQTT interface
+ * @param message_handler Pointer to function to handle new messages
  */
-MQTT::MQTT() :
-	client(), network()
+MQTT::MQTT(void (*message_handler_)(MessageData* data)) :
+	client(), network(), message_handler(message_handler_)
 {
 	connect_data = MQTTPacket_connectData_initializer;
 }
@@ -49,7 +50,7 @@ void MQTT::disconnect()
  */
 int MQTT::subscribe(const char* topic)
 {
-	status = MQTTSubscribe(&client, topic, QOS2, arrived_message);
+	status = MQTTSubscribe(&client, topic, QOS2, message_handler);
 	return status;
 }
 
@@ -96,12 +97,4 @@ int MQTT::listen(int duration)
 int MQTT::get_status() const
 {
 	return status;
-}
-
-/**
- * @brief Subscription message handler
- */
-void MQTT::arrived_message(MessageData* data)
-{
-
 }
