@@ -1,69 +1,69 @@
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <h1 class="mt-4">Dashboard</h1>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <div class="container-fluid">
-        <div class="collapse navbar-collapse" id="navbarColor03">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="#"
-                >Main
-                <span class="visually-hidden">(current)</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">Statistics</a>
-            </li>
-          </ul>
-          <li class="d-flex">
-            <a href="/logout" class="btn btn-secondary">Logout</a>
-          </li>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  <h1 class="mt-4">Dashboard</h1>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/stats">Stats</a>
+        </li>
+      </ul>
+      <a href="/logout" class="btn btn-secondary">Logout</a>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row border d-flex flex-wrap">
+      <div class="col d-flex flex-wrap justify-content-center mt-5 mb-5">
+        <div>
+          <object type="image/svg+xml" data="../fan.svg" id="fanSvg" class="fanSvg"></object>
         </div>
       </div>
-    </nav>
-
-    <div class="container-fluid">
-      <div class="row border">
-        <div class="col d-flex justify-content-center mt-5 mb-5">
-          <div>
-            <object
-              type="image/svg+xml"
-              data="../fan.svg"
-              id="fanSvg"
-              class="fanSvg"
-            ></object>
+      <div class="col d-flex flex-wrap justify-content-center mt-5 mb-5">
+        <label class="switch">
+          <input type="checkbox" id="toggleBtn" onclick="changeStatus()" <%if(pressure.auto === true) {%> <%= "checked"%> <%}%>>
+          <div class="slider round">
+            <span class="manual">Manual</span>
+            <span class="auto">Auto</span>
           </div>
+        </label>
+        <div class="slidercontainer" id="sliderPressureContainer">
+          <div>Pressure</div>
+          <input type="range" min="0" max="140" value=<%-pressure.setpoint%> class="sliderPressure" id="sliderPressure" onchange="updatePressure(this.value)">
+          <div id="displayPressure"><%-pressure.setpoint%>Pa</div>
         </div>
-        <div class="col d-flex justify-content-center">
-          <figure class="f">
-            <div class="toggle slide">
-              <input class="i" id="c" type="checkbox" />
-              <label class="l" for="c">
-                <div class="s slide"></div>
-              </label>
-            </div>
-          </figure>
+        <div class="slidercontainer" id="sliderSpeedContainer">
+          <div>Fan speed</div>
+          <input type="range" min="0" max="100" value=<%-pressure.speed%> class="sliderSpeed" id="sliderSpeed" onchange="updateSpeed(this.value)">
+          <div id="displaySpeed"><%-pressure.speed%>% </div>
+        </div>
+        <div class="lead float-left">
+          <p class="text-left" id="pressure">Current pressure: <%-pressure.pressure%>Pa</p>
         </div>
       </div>
     </div>
+  </div>
+  </div>
+  </div>
+  </div>
 
-    <script src="https://cdn.socket.io/4.2.0/socket.io.min.js" integrity="sha384-PiBR5S00EtOj2Lto9Uu81cmoyZqR57XcOna1oAuVuIEjzj0wpqDVfD0JA9eXlRsj" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="js/sockets.js"></script>
-    <script>
-      anime({
-        targets: "#fanSvg",
-        rotate: "1turn",
-        easing: "linear",
-        loop: true,
-        duration: 2000,
-      });
-    </script>
-  </body>
+  <script src="https://cdn.socket.io/4.2.0/socket.io.min.js"
+    integrity="sha384-PiBR5S00EtOj2Lto9Uu81cmoyZqR57XcOna1oAuVuIEjzj0wpqDVfD0JA9eXlRsj"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="js/sockets.js"></script>
+  <script src="js/handler.js"></script>
+
+
+</body>
+
 </html>

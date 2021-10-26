@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const User = require('../models/User');
+const UserActivity = require('../models/UserActivity');
 
 function validateEmail(email) {
     let re = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
@@ -40,7 +41,26 @@ module.exports = async function(passport) {
                     if(err) throw err;
     
                     if(isMatch) {
-                        console.log(user);
+                        UserActivity.countDocuments({member:user.member}, (err,count) => {
+                            if(count == 0) {
+                                let recordUser = new UserActivity ({
+                                    member: user.member,
+                                    session: 1
+                                });
+                                recordUser.save((err,info) => {
+                                    if(err) console.log(err)
+                                });
+                            }
+                            else {
+                                let recordUser = new UserActivity ({
+                                    member: user.member,
+                                    session: (count+1)
+                                });
+                                recordUser.save((err,info) => {
+                                    if(err) console.log(err)
+                                });                            
+                            }
+                        });
                         return done(null, user);
                     }
                     else {

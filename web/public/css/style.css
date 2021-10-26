@@ -1,106 +1,153 @@
-@import url(https://fonts.googleapis.com/css?family=Montserrat:400,700);
-
-
-.f {
-  display:flex;
-  color:gray;
-  font:100%/1 "Montserrat";
-  flex:1;
-  flex-direction:column;
-}
-.f:after {
-  font-size:2rem;
-  color:gray;
-  opacity:.5;
-}
-.toggle {
-  display:flex;
-  position:relative;
-  width:7.5rem;
-  height:2.5rem; 
-  background:rgb(218, 218, 218);
-  align-self:center;
-  user-select:none;
-  margin:2rem;
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 120px;
+  height: 34px;
 }
 
+.switch input {display:none;}
 
-
-  .toggle:after, .toggle:before {
-  flex:1;
-  text-align:center;
-  line-height:2.5rem;
-}
-.toggle:after {
-  content:"Manual .";
-}
-.toggle:before {
-  content:"Auto";
-}
-
-input { display:none; }
-
-.l {
-  position:absolute;
-  top:0; left:0; right:0; bottom:0;
-  perspective:1000; 
-  cursor:pointer;
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: lightgray;
+  -webkit-transition: .4s;
+  transition: .4s;
 }
 
-.s {
-  position:relative;
-  background:black;
-  transition:.4s;
-  width:50%;
-  height:2.5rem;
-  pointer-events:none;
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: darkgray;
+  -webkit-transition: .4s;
+  transition: .4s;
 }
 
-.i:checked + .l .s { background:black; }
-
-.flip {
-  transform:perspective(200) rotateY(0);  
-  transform-origin:center right;
-  transform-style:preserve-3d;
+input:checked + .slider {
+  background-color: lightgray;
 }
 
-.i:checked + .l .flip {
-  transform:perspective(200) rotateY(180deg);
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .slider:before {
+  -webkit-transform: translateX(85px);
+  -ms-transform: translateX(85px);
+  transform: translateX(85px);
 }
 
-.grow {
-    animation:grow-rev .4s 1 both;
+/*------ ADDED CSS ---------*/
+.auto
+{
+  display: none;
 }
 
-.i:checked + .l .grow {
-  animation:grow .4s 1 both;
-}
-@keyframes grow {
-  50%{ transform:translateX(1.875rem) scale(2) }
-  to { transform:translateX(3.75rem); }
-}
-
-@keyframes grow-rev {
-  from { transform:translateX(3.75rem); }
-  50%{ transform:translateX(1.875rem) scale(2) }
-  to { transform:translateX(0rem); }
+.auto, .manual
+{
+  color: whitesmoke;
+  position: absolute;
+  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 50%;
+  font-size: 14px;
+  font-family: Verdana, sans-serif;
 }
 
+input:checked+ .slider .auto
+{display: block;}
 
-.slide .s { transform:translate(0); }
-.slide .i:checked + .l .s {
-  transform:translateX(3.75rem);
+input:checked + .slider .manual
+{display: none;}
+
+/*--------- END --------*/
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+.slider.round:before {
+  border-radius: 50%;}
+
+
+
+/*----RangeSlider----*/
+
+.slidercontainer {
+  width: 100%;
 }
 
-.slide2 { overflow:hidden; }
-.slide2 .s {
-  transform:translate(0);
-  background:transparent;
-  box-shadow:
-    -3.75rem 0 black,
-    3.75rem 0 black;
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
 }
-.slide2 .i:checked + .l .card {
-  transform:translateX(3.75rem);
-  background:transparent;
+
+/*---range-pressure-range---*/
+
+.sliderPressure {
+  -webkit-apperance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: lightgray;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
 }
+
+.sliderPressure::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: lightgray;
+  cursor: pointer;
+}
+
+.sliderPressure::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: lightgray;
+  cursor: pointer;
+}
+
+/*---range-fan-speed---*/
+.sliderSpeed {
+  -webkit-apperance: none;
+  width: 100%;
+  height: 15px;
+  border-radius: 5px;
+  background: lightgray;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.sliderSpeed::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: lightgray;
+  cursor: pointer;
+}
+
+.sliderSpeed::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: lightgray;
+  cursor: pointer;
+}
+
