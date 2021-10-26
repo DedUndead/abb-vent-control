@@ -1,4 +1,5 @@
 #include "MQTT.h"
+#include <string>
 
 /**
  * @bried Abstraction for MQTT interface
@@ -70,6 +71,11 @@ int MQTT::publish(const char* topic, char* data, size_t data_size)
 
 	status = MQTTPublish(&client, topic, &message);
 	return status;
+}
+
+int MQTT::publish(const char* topic, std::string data, size_t data_size)
+{
+	return MQTT::publish(topic, &data[0], data_size);
 }
 
 /**

@@ -3,6 +3,7 @@
 
 
 #include "MQTTClient.h"
+#include <string>
 
 #define SEND_BUF_LENGTH 256
 #define READ_BUF_LENGTH 2556
@@ -17,6 +18,7 @@ public:
 	void disconnect();
 	int subscribe(const char* topic);
 	int publish(const char* topic, char* data, size_t data_size);
+	int publish(const char* topic, std::string data, size_t data_size);
 	int listen(int duration);
 	int get_status() const;
 private:

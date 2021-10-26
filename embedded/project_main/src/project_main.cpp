@@ -31,6 +31,7 @@
 #include "menu/StringEdit.h"
 #include "vent/SmartVent.h"
 #include "vent/Event.h"
+#include "json/json.hpp"
 #include "delay.h"
 
 /* MACROS, TYPES */
@@ -39,12 +40,13 @@
 #define I2C_BITRATE    1000000
 #define I2C_MODE       0
 #define DEBOUNCE       20
-#define VENT_TICK_LEN  1000
+#define VENT_TICK_T    1000
 #define INITIAL_DELAY  100
 #define MQTT_IP        (char *)"18.198.188.151"
 #define MQTT_PORT      21883
 #define NETWORK_SSID   (char *)"V46D-1"
 #define NETWORK_PASS   (char *)"2483124831"
+#define MQTT_TOPIC     (const char *)"/iot/grp1"
 #define MQTT_BFR_LEN   240
 #define MENU_LABELS_N  2
 #define FREQ_MAX       22000
@@ -54,15 +56,17 @@
 #define PRES_MIN       0
 #define PRES_STEP      1
 #define MENU_ITEMS_NUM 4
+#define MQTT_UPDATE_T  5000
 
 /* SUPPORT FUNCTIONS DECLARATIONS */
-void set_systick(const int& freq);
+const std::string get_sample_json(SmartVent* ventilation, int sample_number);
 void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int mode);
 void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM],int freq);
 void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
 void handle_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
+void set_systick(const int& freq);
 
 void (*item_handlers[MENU_ITEMS_NUM])(SmartVent*, PropertyEdit*[MENU_ITEMS_NUM], int) = {
 		handle_mode,
@@ -77,12 +81,18 @@ static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
 static volatile uint32_t last_pressed(0);
 static SimpleMenu* menu_ptr(nullptr);
+static volatile bool mqtt_ready(false);
+static volatile bool tick_ready(false);
 
 extern "C" {
 	void SysTick_Handler(void)
 	{
 		systicks++;
 		if (delay > 0)  delay--;
+
+		// Flags for polling
+		if (systicks % VENT_TICK_T   == 0) tick_ready = true;
+		if (systicks % MQTT_UPDATE_T == 0) mqtt_ready = true;
 	}
 
 	void PIN_INT0_IRQHandler(void)
@@ -198,17 +208,18 @@ int main(void) {
     /* Configure MQTT */
     MQTT mqtt;
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
-    uart.write(std::to_string(mqtt.get_status()) + "\r\n");
+    mqtt.subscribe(MQTT_TOPIC);
 
     /* Initialize main state machine */
     SmartVent ventilation(&pressure_sensor, &abb_drive);
 
     /* Main polling loop */
+    int sample_number = 0;
     while (true) {
     	// Obtain event requests from LCD UI
     	handle_lcd_input(&ventilation, menu_items);
 
-    	if (millis() % VENT_TICK_LEN == 0) {
+    	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
 
     		status status = ventilation.get_status();
@@ -218,6 +229,16 @@ int main(void) {
 			uart.write("Mode: " + std::to_string(status.mode) + "\r\n");
 			uart.write("Status: " + std::to_string(status.operation_status) + "\r\n");
 			uart.write("Target pressure: " + std::to_string(status.target_pressure) + "\r\n\r\n");
+
+			tick_ready = false;
+    	}
+
+    	if (mqtt_ready) {
+    		std::string sample = get_sample_json(&ventilation, sample_number++);
+    		int code = mqtt.publish(MQTT_TOPIC, sample, (size_t)sample.length());
+    		uart.write("MQTT status: " + std::to_string(code) + "\r\n");
+
+    		mqtt_ready = false;
     	}
     }
 
@@ -225,6 +246,21 @@ int main(void) {
 }
 
 /* SUPPORT FUNCTIONS DEFINITIONS */
+
+const std::string get_sample_json(SmartVent* ventilation, int sample_number)
+{
+	status status = ventilation->get_status();
+
+	nlohmann::json sample;
+	sample["nr"] = sample_number;
+	sample["speed"] = status.frequency;
+	sample["setpoint"] = status.target_pressure;
+	sample["pressure"] = status.pressure;
+	sample["mode"] = status.mode;
+	sample["status"] = status.operation_status;
+
+	return sample.dump();
+}
 
 /**
  * @brief Observe user inputs in LCD
