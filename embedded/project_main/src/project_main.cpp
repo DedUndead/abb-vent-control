@@ -46,22 +46,31 @@
 #define NETWORK_SSID   (char *)"V46D-1"
 #define NETWORK_PASS   (char *)"2483124831"
 #define MQTT_BFR_LEN   240
-#define MENU_LABELS_N  3
+#define MENU_LABELS_N  2
 #define FREQ_MAX       22000
 #define FREQ_MIN       0
-#define FREQ_STEP      1500
+#define FREQ_LCD_STEP  200
 #define PRES_MAX       120
 #define PRES_MIN       0
 #define PRES_STEP      1
-#define MENU_ITEMS_NUM 3
+#define MENU_ITEMS_NUM 4
 
 /* SUPPORT FUNCTIONS DECLARATIONS */
 void set_systick(const int& freq);
-void observe_lcd_changes(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM], int* last_values);
-void handle_mode(SmartVent* ventilation, int mode);
-void handle_freq(SmartVent* ventilation, int freq);
-void handle_pressure(SmartVent* ventilation, int pressure);
-void (*lcd_handlers[MENU_ITEMS_NUM])(SmartVent*, int) = { handle_mode, handle_freq, handle_pressure };
+void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
+void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
+void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int mode);
+void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM],int freq);
+void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
+void handle_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
+
+void (*item_handlers[MENU_ITEMS_NUM])(SmartVent*, PropertyEdit*[MENU_ITEMS_NUM], int) = {
+		handle_mode,
+		handle_freq,
+		handle_target_pressure,
+		handle_pressure
+};
+enum item_indexes { iMode, iFrequency, iTarget, iPressure };
 
 /* INTERRUPT HANDLERS AND SHARED VARIABLES */
 static volatile std::atomic_int delay(0);
@@ -138,7 +147,7 @@ int main(void) {
 	LpcUartConfig cfg = { LPC_USART0, 115200, UART_CFG_DATALEN_8 | UART_CFG_PARITY_NONE | UART_CFG_STOPLEN_1, false, txpin, rxpin, none, none };
 	LpcUart uart(cfg);
 
-    /* LCD initialization */
+    /* Initialize LCD */
     DigitalIoPin rs(0, 10);
     DigitalIoPin en(0, 9);
     DigitalIoPin d4(1, 8);
@@ -147,27 +156,30 @@ int main(void) {
     DigitalIoPin d7(0, 7);
     LiquidCrystal lcd(&rs, &en, &d4, &d5, &d6, &d7);
 
-    /* Menu initialization */
+    /* Initialize menu */
     SimpleMenu menu;
 
     std::string labels[MENU_LABELS_N] = { "Manual", "Automatic" };
     StringEdit mode(&lcd, std::string("Mode"), labels, MENU_LABELS_N);
-    IntegerEdit freq(&lcd, std::string("Frequency"), FREQ_MAX, FREQ_MIN, FREQ_STEP);
-    IntegerEdit pressure(&lcd, std::string("Pressure"), PRES_MAX, PRES_MIN, PRES_STEP);
+    IntegerEdit freq(&lcd, std::string("Frequency"), FREQ_MAX, FREQ_MIN, FREQ_LCD_STEP, true);
+    IntegerEdit target(&lcd, std::string("Target pressure"), PRES_MAX, PRES_MIN, PRES_STEP, false);
+    IntegerEdit pressure(&lcd, std::string("Pressure"), PRES_MAX, PRES_MIN, PRES_STEP, false);
 
     menu.addItem(new MenuItem(&mode));
     menu.addItem(new MenuItem(&freq));
+    menu.addItem(new MenuItem(&target));
     menu.addItem(new MenuItem(&pressure));
 
     menu_ptr = &menu;
 
-    /* Initial menu value */
+    /* Configure menu values */
     mode.setValue(0);
     freq.setValue(0);
+    target.setValue(0);
     pressure.setValue(0);
 
-    PropertyEdit* menu_items[MENU_ITEMS_NUM] = { &mode, &freq, &pressure };
-    int last_values[MENU_ITEMS_NUM] = { 0, 0, 0 };
+    /* Show initial menu values, create buffers */
+    PropertyEdit* menu_items[MENU_ITEMS_NUM] = { &mode, &freq, &target, &pressure };
     menu.event(MenuItem::show);
 
     /* Menu buttons */
@@ -193,13 +205,14 @@ int main(void) {
 
     /* Main polling loop */
     while (true) {
-    	// Observe changes in LCD UI
-    	observe_lcd_changes(&ventilation, menu_items, last_values);
+    	// Obtain event requests from LCD UI
+    	handle_lcd_input(&ventilation, menu_items);
 
     	if (millis() % VENT_TICK_LEN == 0) {
     		ventilation.handle_state(Event(Event::eTick));
 
     		status status = ventilation.get_status();
+    		update_lcd(&ventilation, menu_items);
 			uart.write("Frequency: " + std::to_string(status.frequency) + "\r\n");
 			uart.write("Pressure: " + std::to_string(status.pressure) + "\r\n");
 			uart.write("Mode: " + std::to_string(status.mode) + "\r\n");
@@ -215,52 +228,136 @@ int main(void) {
 
 /**
  * @brief Observe user inputs in LCD
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to handle inputs
  * If any present, call the respective handler
  */
-void observe_lcd_changes(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM], int* last_values)
+void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM])
 {
+	// Obtain current LCD items statuses
+	for (int i = 0; i < MENU_ITEMS_NUM - 1; i++) {
+		(*item_handlers[i])(ventilation, items, items[i]->getValue()); // Call handler
+	}
+}
+
+/**
+ * @brief Update LCD UI with current state machine status
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to handle inputs
+ * If any present, call the respective handler
+ */
+void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM])
+{
+	// Make sure items are not being modified by user to avoid RIT timer conflicts
 	for (int i = 0; i < MENU_ITEMS_NUM; i++) {
-		if (items[i]->getValue() != last_values[i]) {
-			last_values[i] = items[i]->getValue(); // Update last value
-			(*lcd_handlers[i])(ventilation, last_values[i]); // Call handler
-		}
+		if (items[i]->getFocus()) return;
+	}
+
+	// Obtain current state machine status
+	status status = ventilation->get_status();
+	int current_status[MENU_ITEMS_NUM] = {
+		status.mode,
+		status.frequency,
+		status.target_pressure,
+		status.pressure
+	};
+
+	for (int i = 0; i < MENU_ITEMS_NUM; i++) {
+		(*item_handlers[i])(ventilation, items, current_status[i]); // Call handler
 	}
 }
 
 /**
  * @brief Mode handler
- * Send event to switch to mode specified by the user
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to keep them updated with latest changes
+ * @param value       Target value
+ * Universal handler for mqtt and lcd UIs input, lcd output
  */
-void handle_mode(SmartVent* ventilation, int value)
+void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int value)
 {
+	// Update LCD menu
+	if (value != menu_items[iMode]->getValue()) {
+		menu_items[iMode]->setValue(value);
+		menu_ptr->event(MenuItem::show);
+	}
+
+	// See if update in state machine needed
+	if (value == ventilation->get_status().mode) return;
+
+	// Send event to state machine
 	if (value == SmartVent::mManual) {
 		ventilation->handle_state(Event(Event::eManual));
+
+		menu_items[iFrequency]->toggle_adjust();
+		menu_items[iTarget]->toggle_adjust();
 	}
 	else {
 		ventilation->handle_state(Event(Event::eAuto));
+
+		menu_items[iFrequency]->toggle_adjust();
+		menu_items[iTarget]->toggle_adjust();
 	}
 }
 
 /**
  * @brief Frequency handler
- * Send event to set frequency specified by the user
- * Skip if mode is automatic
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to keep them updated with latest changes
+ * @param value       Target value
+ * Universal handler for mqtt and lcd UIs input, lcd output  * Skip if mode is automatic
  */
-void handle_freq(SmartVent* ventilation, int freq)
+void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int freq)
 {
-	if (ventilation->get_status().mode == SmartVent::mAuto) return;
+	// Update LCD menu
+	if (freq != menu_items[iFrequency]->getValue()) {
+		menu_items[iFrequency]->setValue(freq);
+		menu_ptr->event(MenuItem::show);
+	}
+
+	// See if update in state machine needed
+	if (freq == ventilation->get_status().frequency) return;
+
+	// Send event to state machine
 	ventilation->handle_state(Event(Event::eFreq, freq));
 }
 
 /**
- * @brief Pressure handler
- * Send event to set target pressure specified by the user
- * Skip if more is manual
+ * @brief Target pressure handler
+ * @param ventilation Pointer to target state machine
+ * @param menu_items  Pointer to LCD's menu items to keep them updated with latest changes
+ * @param value       Target value
+ * Universal handler for mqtt and lcd UIs input, lcd output
  */
-void handle_pressure(SmartVent* ventilation, int pressure)
+void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure)
 {
-	if (ventilation->get_status().mode == SmartVent::mManual) return;
+	// Update LCD menu
+	if (pressure != menu_items[iTarget]->getValue()) {
+		menu_items[iTarget]->setValue(pressure);
+		menu_ptr->event(MenuItem::show);
+	}
+
+	// See if update in state machine needed
+	if (pressure == ventilation->get_status().target_pressure) return;
+
+	// Send event to state machine
 	ventilation->handle_state(Event(Event::ePres, pressure));
+}
+
+/**
+ * @brief Current pressure handler
+ * @param ventilation Pointer to target state machine [Presence is necessary for handlers array]
+ * @param menu_items  Pointer to LCD's menu items to keep them updated with latest changes
+ * @param value       Target value
+ * Universal handler for lcd output
+ */
+void handle_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure)
+{
+	// Update LCD menu
+	if (pressure != menu_items[iPressure]->getValue()) {
+		menu_items[iPressure]->setValue(pressure);
+		menu_ptr->event(MenuItem::show);
+	}
 }
 
 /**

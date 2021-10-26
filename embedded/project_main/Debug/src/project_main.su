@@ -6,18 +6,20 @@ atomic_base.h:99:3:constexpr std::memory_order std::operator&(std::memory_order,
 gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
 basic_string.h:6546:3:std::string std::__cxx11::to_string(int)	24	static
 Event.h:12:2:Event::Event(Event::event_type, int64_t)	24	static
-project_main.cpp:73:7:void SysTick_Handler()	8	static
-project_main.cpp:79:7:void PIN_INT0_IRQHandler()	8	static
-project_main.cpp:90:7:void PIN_INT1_IRQHandler()	8	static
-project_main.cpp:101:7:void PIN_INT2_IRQHandler()	8	static
-project_main.cpp:114:5:int main()	5064	static
-project_main.cpp:220:6:void observe_lcd_changes(SmartVent*, PropertyEdit**, int*)	40	static
-project_main.cpp:234:6:void handle_mode(SmartVent*, int)	48	static
-project_main.cpp:249:6:void handle_freq(SmartVent*, int)	56	static
-project_main.cpp:260:6:void handle_pressure(SmartVent*, int)	56	static
-project_main.cpp:270:6:void set_systick(const int&)	24	static
-project_main.cpp:282:6:void delay_systick(int)	16	static
-project_main.cpp:294:10:uint32_t millis()	4	static
+project_main.cpp:82:7:void SysTick_Handler()	8	static
+project_main.cpp:88:7:void PIN_INT0_IRQHandler()	8	static
+project_main.cpp:99:7:void PIN_INT1_IRQHandler()	8	static
+project_main.cpp:110:7:void PIN_INT2_IRQHandler()	8	static
+project_main.cpp:123:5:int main()	5112	static
+project_main.cpp:235:6:void handle_lcd_input(SmartVent*, PropertyEdit**)	32	static
+project_main.cpp:249:6:void update_lcd(SmartVent*, PropertyEdit**)	72	static
+project_main.cpp:277:6:void handle_mode(SmartVent*, PropertyEdit**, int)	80	static
+project_main.cpp:310:6:void handle_freq(SmartVent*, PropertyEdit**, int)	64	static
+project_main.cpp:332:6:void handle_target_pressure(SmartVent*, PropertyEdit**, int)	64	static
+project_main.cpp:354:6:void handle_pressure(SmartVent*, PropertyEdit**, int)	24	static
+project_main.cpp:367:6:void set_systick(const int&)	24	static
+project_main.cpp:379:6:void delay_systick(int)	16	static
+project_main.cpp:391:10:uint32_t millis()	4	static
 string_conversions.h:99:5:) [with _String = std::__cxx11::basic_string<char>; _CharT = char]	44	dynamic
 atomic_base.h:284:7:std::__atomic_base<_IntTp>::operator std::__atomic_base<_IntTp>::__int_type() const volatile [with _ITp = int]	24	static
 atomic_base.h:314:7:std::__atomic_base<_IntTp>::__int_type std::__atomic_base<_IntTp>::operator--(int) volatile [with _ITp = int]	32	static

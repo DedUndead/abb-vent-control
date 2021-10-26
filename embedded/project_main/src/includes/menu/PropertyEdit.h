@@ -20,6 +20,8 @@ public:
 	virtual bool getFocus() = 0;
 	virtual void display() = 0;
 	virtual int getValue() = 0;
+	virtual void setValue(int value) = 0;
+	virtual void toggle_adjust() = 0;
 };
 
 #endif /* PROPERTYEDIT_H_ */

@@ -14,7 +14,7 @@
 
 class IntegerEdit: public PropertyEdit {
 public:
-	IntegerEdit(LiquidCrystal *lcd_, std::string editTitle, int upper = 100, int lower = 0, int step = 1);
+	IntegerEdit(LiquidCrystal *lcd_, std::string editTitle, int upper = 100, int lower = 0, int step = 1, bool adjustable = true);
 	virtual ~IntegerEdit();
 	void increment();
 	void decrement();
@@ -25,6 +25,7 @@ public:
 	void display();
 	int getValue();
 	void setValue(int value);
+	void toggle_adjust();
 private:
 	void save();
 	void displayEditValue();
@@ -36,6 +37,7 @@ private:
 	int step_size;
 	int value;
 	int edit;
+	bool adjustable;
 	bool focus;
 };
 

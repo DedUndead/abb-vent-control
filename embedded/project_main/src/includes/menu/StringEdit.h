@@ -18,6 +18,7 @@ public:
 	void display();
 	int getValue();
 	void setValue(int index);
+	void toggle_adjust() {};
 private:
 	void save();
 	void displayEditValue();

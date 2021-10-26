@@ -8,8 +8,8 @@
 #include "IntegerEdit.h"
 #include <cstdio>
 
-IntegerEdit::IntegerEdit(LiquidCrystal *lcd_, std::string editTitle, int upper, int lower, int step):
-lcd(lcd_), title(editTitle), upper_limit(upper), lower_limit(lower), step_size(step)
+IntegerEdit::IntegerEdit(LiquidCrystal *lcd_, std::string editTitle, int upper, int lower, int step, bool adjustable):
+lcd(lcd_), title(editTitle), upper_limit(upper), lower_limit(lower), step_size(step), adjustable(adjustable)
 {
 	value = 0;
 	edit = 0;
@@ -20,11 +20,13 @@ IntegerEdit::~IntegerEdit() {
 }
 
 void IntegerEdit::increment() {
+	if (!adjustable) return;
 	if (edit + step_size > upper_limit) return;
 	edit += step_size;
 }
 
 void IntegerEdit::decrement() {
+	if (!adjustable) return;
 	if (edit - step_size < lower_limit) return;
 	edit -= step_size;
 }
@@ -73,4 +75,9 @@ int IntegerEdit::getValue() {
 void IntegerEdit::setValue(int value) {
 	edit = value;
 	save();
+}
+
+void IntegerEdit::toggle_adjust()
+{
+	adjustable = !adjustable;
 }

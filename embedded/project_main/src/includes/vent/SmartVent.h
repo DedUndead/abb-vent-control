@@ -11,7 +11,7 @@
 #define STATUS_LOADING  1
 #define STATUS_FAIL    -1
 #define STATUS_TIMEOUT -2
-#define FREQ_STEP	    500
+#define FREQ_STEP	    200
 #define PRES_ERROR      0
 #define MAX_FREQ		30000
 #define MIN_FREQ		0
