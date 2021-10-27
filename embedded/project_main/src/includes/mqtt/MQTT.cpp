@@ -84,7 +84,7 @@ int MQTT::publish(const char* topic, std::string data, size_t data_size)
  * @param duration Duration in milliseconds
  * @return 		   Status of operation
  */
-int MQTT::listen(int duration)
+int MQTT::yield(int duration)
 {
 	status = MQTTYield(&client, duration);
 	return status;

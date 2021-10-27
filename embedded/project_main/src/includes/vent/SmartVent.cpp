@@ -214,8 +214,10 @@ void SmartVent::autoadjust_frequency()
  */
 void SmartVent::set_frequency(int value)
 {
+	int hz = linear_transform(value);
+
 	// Error checking
-	if (!drive->set_frequency(value)) {
+	if (!drive->set_frequency(hz)) {
 		current_status.operation_status = STATUS_FAIL;
 		return;
 	}
@@ -223,3 +225,14 @@ void SmartVent::set_frequency(int value)
 	current_status.operation_status = STATUS_OK;
 	current_status.frequency = value;
 }
+
+/**
+ * @brief Transform percent of speed into fan frequency
+ * @param  percent Value
+ * @return         Value in hz
+ */
+int SmartVent::linear_transform(int percent)
+{
+	return MAX_FREQ * percent / 100;
+}
+
