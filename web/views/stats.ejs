@@ -1,0 +1,168 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <h1 class="mt-4">Stats</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="/dashboard">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="#">Stats</a>
+            </li>
+        </ul>
+        <a href="/logout" class="btn btn-secondary">Logout</a>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="d-flex flex-wrap">
+            <div style="left:10px; width:400px; height:500px; float:left;">
+                <canvas id="barChart"></canvas>
+                <canvas id="polarAreaChart"
+                    style="display: block; box-sizing: border-box; height: 372.537px; width: 300.254px;" width="200px"
+                    height="200px"></canvas>
+            </div>
+            <div style="left:10px; width:350px; height:250px; float: right;">
+                <canvas id="lineChartAuto" width="200" height="200"></canvas>
+                <canvas id="lineChartManual" width="200" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"
+        integrity="sha512-GMGzUEevhWh8Tc/njS0bDpwgxdCJLQBWG3Z2Ct+JGOpVnEmjvNx6ts4v6A2XJf1HOrtOsfhv3hBKpK9kE5z8AQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        /*TODO: 
+        * - Bar Chart -> tracking sessions of all the users that logged in into the website
+        * - Polar Area Chart -> individual session activity 
+        * - Line Chart -> pressure values of the users (auto)
+        * - Line Chart -> speed values of the users (manual)
+        */
+        var ctx = document.getElementById("barChart").getContext("2d");
+        const myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Red', 'Blue'],
+                datasets: [{
+                    label: '# of Votes',
+                    data: [3, 5],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                maintainAspectRatio: true,
+                responsive: true
+            }
+        });
+
+        const polarAreaElement = document.getElementById('polarAreaChart');
+        const polarAreaChart = new Chart(polarAreaElement, {
+            type: 'doughnut',
+            data: {
+                labels: ['Red', 'Green'],
+                datasets: [{
+                    label: 'My First Dataset',
+                    data: [3, 5],
+                    backgroundColor: [
+                        'rgb(255, 99, 132)',
+                        'rgb(75, 192, 192)'
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                maintainAspectRatio: true,
+                responsive: true
+            }
+        });
+
+
+        const lineChartAutoElement = document.getElementById('lineChartAuto');
+        const lineChartAuto = new Chart(lineChartAutoElement, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July'],
+                datasets: [
+                    {
+                        label: 'Dataset 1',
+                        data: [65, 59, 80, 81, 56, 55, 40],
+                        borderColor: 'Red',
+                        backgroundColor: 'Red',
+                    },
+                    {
+                        label: 'Dataset 2',
+                        data: [5, 2, 8, 15, 32, 22, 40],
+                        borderColor: 'Blue',
+                        backgroundColor: 'Blue',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Chart.js Line Chart'
+                }
+            }
+        });
+        const lineChartManualElement = document.getElementById('lineChartManual');
+        const lineChartManual = new Chart(lineChartManualElement, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July'],
+                datasets: [
+                    {
+                        label: 'Dataset 1',
+                        data: [65, 59, 80, 81, 56, 55, 40],
+                        borderColor: 'Red',
+                        backgroundColor: 'Red',
+                    },
+                    {
+                        label: 'Dataset 2',
+                        data: [5, 2, 8, 15, 32, 22, 40],
+                        borderColor: 'Blue',
+                        backgroundColor: 'Blue',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Chart.js Line Chart'
+                }
+            }
+        });
+
+    </script>
+</body>
+
+</html>
