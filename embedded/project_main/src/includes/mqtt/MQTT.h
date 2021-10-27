@@ -20,7 +20,7 @@ public:
 	int subscribe(const char* topic);
 	int publish(const char* topic, char* data, size_t data_size);
 	int publish(const char* topic, std::string data, size_t data_size);
-	int listen(int duration);
+	int yield(int duration);
 	int get_status() const;
 private:
 	MQTTClient client;

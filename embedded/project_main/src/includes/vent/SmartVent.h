@@ -11,9 +11,9 @@
 #define STATUS_LOADING  1
 #define STATUS_FAIL    -1
 #define STATUS_TIMEOUT -2
-#define FREQ_STEP	    200
+#define FREQ_STEP	    1
 #define PRES_ERROR      0
-#define MAX_FREQ		30000
+#define MAX_FREQ		20000
 #define MIN_FREQ		0
 
 class SmartVent;
@@ -42,10 +42,12 @@ private:
 	void mode_manual(const Event& e);
 	void mqtt_parse(const Event& e);
 	void set_pressure(const Event& e);
+
 	int read_pressure();
 	bool target_reached();
 	void autoadjust_frequency();
 	void set_frequency(int value);
+	int linear_transform(int percent);
 
 	int timer;
 	SdpSensor* sdp;

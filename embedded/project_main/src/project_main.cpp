@@ -21,8 +21,9 @@
 #include <atomic>
 #include <cstring>
 #include <string>
+#include <stdio.h>
 #include "modbus/AbbDrive.h"
-#include "uart/LpcUart.h" // Remove after debugging finished
+#include "uart/LpcUart.h"
 #include "I2C/I2C.h"
 #include "I2C/SDPSensor.h"
 #include "MQTTClient.h"
@@ -35,7 +36,7 @@
 #include "json/json.hpp"
 #include "delay.h"
 
-/* MACROS, TYPES */
+/* MACROS */
 #define SYSTICKRATE_HZ 1000
 #define I2C_CLOCKDIV   72000000 / 1000000
 #define I2C_BITRATE    1000000
@@ -47,20 +48,21 @@
 #define MQTT_PORT      21883
 #define NETWORK_SSID   (char *)"V46D-1"
 #define NETWORK_PASS   (char *)"2483124831"
-#define MQTT_TOPIC     (const char *)"/iot/grp1"
+#define MQTT_TOPIC_R   (const char *)"/iot/grp1/web"
+#define MQTT_TOPIC_S   (const char *)"/iot/grp1/mcu"
 #define MQTT_BFR_LEN   240
 #define MENU_LABELS_N  2
-#define FREQ_MAX       22000
+#define FREQ_MAX       100
 #define FREQ_MIN       0
-#define FREQ_LCD_STEP  200
+#define FREQ_LCD_STEP  1
 #define PRES_MAX       120
 #define PRES_MIN       0
 #define PRES_STEP      1
 #define MENU_ITEMS_NUM 4
 #define MQTT_UPDATE_T  5000
 
-/* SUPPORT FUNCTIONS DECLARATIONS */
-const std::string get_sample_json(SmartVent* ventilation, int sample_number);
+/* SUPPORT FUNCTIONS AND TYPES DECLARATIONS */
+std::string get_sample_json(SmartVent* ventilation, int sample_number);
 void handle_mqtt_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
 void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM]);
@@ -84,7 +86,7 @@ static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
 static volatile uint32_t last_pressed(0);
 static SimpleMenu* menu_ptr(nullptr);
-static volatile bool mqtt_ready(false);
+static volatile bool sample_ready(false);
 static volatile bool tick_ready(false);
 static std::string mqtt_message("");
 static bool mqtt_message_arrived(false);
@@ -97,7 +99,7 @@ extern "C" {
 
 		// Flags for polling
 		if (systicks % VENT_TICK_T   == 0) tick_ready = true;
-		if (systicks % MQTT_UPDATE_T == 0) mqtt_ready = true;
+		//if (systicks % MQTT_UPDATE_T == 0) sample_ready = true;
 	}
 
 	void PIN_INT0_IRQHandler(void)
@@ -213,13 +215,14 @@ int main(void) {
     /* Configure MQTT */
     MQTT mqtt(mqtt_message_handler);
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
-    mqtt.subscribe(MQTT_TOPIC);
+    mqtt.subscribe(MQTT_TOPIC_R);
 
     /* Initialize main state machine */
     SmartVent ventilation(&pressure_sensor, &abb_drive);
 
     /* Main polling loop */
     int sample_number = 0;
+    int mqtt_status = 0;
     while (true) {
     	// Obtain event requests from LCD UI
     	handle_lcd_input(&ventilation, menu_items);
@@ -227,8 +230,8 @@ int main(void) {
     	// Send tick event
     	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
+    		status status = ventilation.get_status(); // Update ventilation status
 
-    		status status = ventilation.get_status();
     		update_lcd(&ventilation, menu_items);
 			uart.write("Frequency: " + std::to_string(status.frequency) + "\r\n");
 			uart.write("Pressure: " + std::to_string(status.pressure) + "\r\n");
@@ -240,12 +243,12 @@ int main(void) {
     	}
 
     	// Obtain sample and send over mqtt
-    	if (mqtt_ready) {
+    	if (sample_ready) {
     		std::string sample = get_sample_json(&ventilation, sample_number++);
-    		int code = mqtt.publish(MQTT_TOPIC, sample, (size_t)sample.length());
-    		uart.write("MQTT status: " + std::to_string(code) + "\r\n");
+    		mqtt_status = mqtt.publish(MQTT_TOPIC_S, sample, sample.length());
+    		uart.write("MQTT status: " + std::to_string(mqtt_status) + "\r\n");
 
-    		mqtt_ready = false;
+    		sample_ready = false;
     	}
 
     	// Obtain event requests from WEB UI
@@ -253,6 +256,10 @@ int main(void) {
     		uart.write(mqtt_message + "\r\n");
     		handle_mqtt_input(&ventilation, menu_items);
     	}
+
+    	// Error handling
+
+    	mqtt_status = mqtt.yield(100);
     }
 
     return 0;
@@ -266,7 +273,7 @@ int main(void) {
  * @param  sample_number Number of sample
  * @return JSON string
  */
-const std::string get_sample_json(SmartVent* ventilation, int sample_number)
+std::string get_sample_json(SmartVent* ventilation, int sample_number)
 {
 	status status = ventilation->get_status();
 
@@ -329,13 +336,10 @@ void handle_lcd_input(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM
  */
 void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM])
 {
-	// Make sure items are not being modified by user to avoid RIT timer conflicts
-	for (int i = 0; i < MENU_ITEMS_NUM; i++) {
-		if (items[i]->getFocus()) return;
-	}
+	// Get status
+	status status = ventilation->get_status();
 
 	// Obtain current state machine status
-	status status = ventilation->get_status();
 	int current_status[MENU_ITEMS_NUM] = {
 		status.mode,
 		status.frequency,
@@ -357,8 +361,8 @@ void update_lcd(SmartVent* ventilation, PropertyEdit* items[MENU_ITEMS_NUM])
  */
 void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int value)
 {
-	// Update LCD menu
-	if (value != menu_items[iMode]->getValue()) {
+	// Update LCD menu if not being modified
+	if (value != menu_items[iMode]->getValue() && !menu_items[iMode]->getFocus()) {
 		menu_items[iMode]->setValue(value);
 		menu_ptr->event(MenuItem::show);
 	}
@@ -390,8 +394,8 @@ void handle_mode(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM
  */
 void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int freq)
 {
-	// Update LCD menu
-	if (freq != menu_items[iFrequency]->getValue()) {
+	// Update LCD menu if not being modified
+	if (freq != menu_items[iFrequency]->getValue() && !menu_items[iFrequency]->getFocus()) {
 		menu_items[iFrequency]->setValue(freq);
 		menu_ptr->event(MenuItem::show);
 	}
@@ -412,8 +416,8 @@ void handle_freq(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM
  */
 void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure)
 {
-	// Update LCD menu
-	if (pressure != menu_items[iTarget]->getValue()) {
+	// Update LCD menu if not being modified
+	if (pressure != menu_items[iTarget]->getValue() && !menu_items[iTarget]->getFocus()) {
 		menu_items[iTarget]->setValue(pressure);
 		menu_ptr->event(MenuItem::show);
 	}
@@ -476,6 +480,17 @@ uint32_t millis()
 
 void mqtt_message_handler(MessageData* data)
 {
-	mqtt_message_arrived = false;
-	mqtt_message = (char*)data->message->payload;
+	mqtt_message_arrived = true;
+	mqtt_message = "";
+
+	// Parse message from payload
+	char payload_parsed[READ_BUF_LENGTH];
+	snprintf(
+			payload_parsed,
+			data->message->payloadlen + 1,
+			"%.*s\0",
+			data->message->payloadlen,
+			(char *)data->message->payload
+	);
+	mqtt_message = payload_parsed;
 }
