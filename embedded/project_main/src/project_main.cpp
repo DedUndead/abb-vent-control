@@ -99,7 +99,7 @@ extern "C" {
 
 		// Flags for polling
 		if (systicks % VENT_TICK_T   == 0) tick_ready = true;
-		//if (systicks % MQTT_UPDATE_T == 0) sample_ready = true;
+		if (systicks % MQTT_UPDATE_T == 0) sample_ready = true;
 	}
 
 	void PIN_INT0_IRQHandler(void)
@@ -151,8 +151,8 @@ int main(void) {
     SdpSensor pressure_sensor(&i2c);
 
     /* Configure systick and RIT timers */
-    set_systick(SYSTICKRATE_HZ);
     Chip_RIT_Init(LPC_RITIMER);
+    set_systick(SYSTICKRATE_HZ);
 
     /* Drive peripheral */
     AbbDrive abb_drive;
@@ -478,6 +478,11 @@ uint32_t millis()
 	return systicks;
 }
 
+/**
+ * @brief Handle message that aarrived via MQTT
+ * Parse the message and store it in shared buffer
+ * @param data Internal MQTT data typr
+ */
 void mqtt_message_handler(MessageData* data)
 {
 	mqtt_message_arrived = true;

@@ -73,8 +73,12 @@ void SmartVent::mode_auto(const Event& e)
 		break;
 	case Event::eTick:
 		current_status.pressure = read_pressure();
+
 		if (!target_reached()) {
 			set_state(&SmartVent::set_pressure);
+		}
+		else {
+			modbus_heartbeat();
 		}
 
 		break;
@@ -103,6 +107,7 @@ void SmartVent::mode_manual(const Event& e)
 		break;
 	case Event::eTick:
 		current_status.pressure = read_pressure();
+		modbus_heartbeat();
 
 		break;
 	default:

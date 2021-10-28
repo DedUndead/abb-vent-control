@@ -48,6 +48,7 @@ private:
 	void autoadjust_frequency();
 	void set_frequency(int value);
 	int linear_transform(int percent);
+	void modbus_heartbeat() { drive->get_frequency(); };
 
 	int timer;
 	SdpSensor* sdp;
