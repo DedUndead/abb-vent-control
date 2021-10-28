@@ -32,11 +32,11 @@ mongoose.connect(db, {useNewUrlParser: true})
 
 
 // MQTT conf
-const mqtt_client = mqtt.connect('mqtt://127.0.0.1:1883')
+const mqtt_client = mqtt.connect('mqtt://18.198.188.151:21883')
 
 // connect to broker and subscribe
 mqtt_client.on('connect', function () {
-    mqtt_client.subscribe('controller/status', function (err) {
+    mqtt_client.subscribe('/iot/grp1', function (err) {
         if (err) {
             console.log("error encountered")
             mqtt_client.reconnect()
@@ -50,15 +50,15 @@ mqtt_client.on('connect', function () {
 // Handle new mqtt message
 mqtt_client.on('message', async function (topic, message) {
     let input = JSON.parse(message)
-    //console.log(input)
+    console.log(input)
     io.emit("stats", input);
     let sensorData = new Data({
                             nr: input.nr, 
                             speed: input.speed, 
                             setpoint: input.setpoint,
                             pressure: input.pressure,
-                            auto: input.auto,
-                            error: input.error
+                            auto: input.mode,
+                            error: input.status
                         })
     sensorData.save((err,info) => {
         if(err) console.log(err)
@@ -76,15 +76,18 @@ io.on("connection", (socket) => {
         // * parse and transform data
         // * publish serialized data on MQTT
 
-        mqtt_client.publish('client_update', "test_data");
+        console.log(data)
+        //mqtt_client.publish('client_update', "test_data");
     });
+    
+    // Handle user activity update
     socket.on('user_activity', async function (userData) { 
         let member = await retrieveUserActivityData();
         member[0].events.push(userData)
         //console.log(member[0].events);
         //console.log(member[0].session)
         let update = await UserActivity.findOneAndUpdate({member:member[0].member ,session: member[0].session,}, {events: member[0].events}, {new:true});
-        console.log(update);
+        //console.log(update);
         update.save((err,info) => {
             if(err) console.log(err)
         })

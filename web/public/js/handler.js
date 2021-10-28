@@ -1,8 +1,7 @@
-let mode = document.getElementById('toggleBtn')
 
 function changeStatus() {
-  let pressureContainer = document.getElementById('sliderPressureContainer');
-  let speedContainer = document.getElementById('sliderSpeedContainer');
+  const pressureContainer = document.getElementById('sliderPressureContainer');
+  const speedContainer = document.getElementById('sliderSpeedContainer');
   console.log(mode.checked)
   if (mode.checked) {
     pressureContainer.hidden = false;
@@ -22,8 +21,7 @@ fanSpeed = anime({
     easing: "linear",
     rotate: '1turn',
     loop: true,
-    duration: 3000
-
+    duration: 1000
   });
 
 function updatePressure(pressure){
