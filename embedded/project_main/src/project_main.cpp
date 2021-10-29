@@ -38,30 +38,35 @@
 #include "delay.h"
 
 /* MACROS */
-#define SYSTICKRATE_HZ 1000
-#define I2C_CLOCKDIV   72000000 / 1000000
-#define I2C_BITRATE    1000000
-#define I2C_MODE       0
-#define DEBOUNCE       20
-#define VENT_TICK_T    1000
-#define INITIAL_DELAY  100
-#define MQTT_IP        (char *)"18.198.188.151"
-#define MQTT_PORT      21883
-#define NETWORK_SSID   (char *)"V46D-1"
-#define NETWORK_PASS   (char *)"2483124831"
-#define MQTT_TOPIC_R   (const char *)"/iot/grp1/web"
-#define MQTT_TOPIC_S   (const char *)"/iot/grp1/mcu"
-#define MQTT_BFR_LEN   240
-#define MENU_LABELS_N  2
-#define FREQ_MAX       100
-#define FREQ_MIN       0
-#define FREQ_LCD_STEP  1
-#define PRES_MAX       120
-#define PRES_MIN       0
-#define PRES_STEP      1
-#define MENU_ITEMS_NUM 4
-#define MQTT_UPDATE_T  5000
-#define TIMEOUT_TIME   5000
+#define SYSTICKRATE_HZ       1000
+#define I2C_CLOCKDIV         72000000 / 1000000
+#define I2C_BITRATE          1000000
+#define I2C_MODE             0
+#define DEBOUNCE             20
+#define VENT_TICK_T          1000
+#define INITIAL_DELAY        100
+#define MQTT_IP              (char *)"18.198.188.151"
+#define MQTT_PORT            21883
+#define NETWORK_SSID         (char *)"V46D-1"
+#define NETWORK_PASS         (char *)"2483124831"
+#define MQTT_TOPIC_RECEIVE   (const char *)"/iot/grp1/web"
+#define MQTT_TOPIC_SEND      (const char *)"/iot/grp1/mcu"
+#define MQTT_BFR_LEN         240
+#define MQTT_OK              0
+#define MQTT_YIELD_TIME      100
+#define MENU_LABELS_N        2
+#define FREQ_MAX             100
+#define FREQ_MIN             0
+#define FREQ_LCD_STEP        1
+#define PRES_MAX             120
+#define PRES_MIN             0
+#define PRES_STEP            1
+#define MENU_ITEMS_NUM       4
+#define MQTT_UPDATE_TIMEOUT  5000
+#define ERROR_TIMEOUT        5000
+#define VENT_HARDWARE_ERROR  -1
+#define VENT_TIMEOUT_ERROR   -2
+#define LCD_NEXT_LINE        16
 
 /* SUPPORT FUNCTIONS AND TYPES DECLARATIONS */
 std::string get_sample_json(SmartVent* ventilation, int sample_number);
@@ -102,8 +107,8 @@ extern "C" {
 		if (delay > 0)  delay--;
 
 		// Flags for polling
-		if (systicks % VENT_TICK_T   == 0) tick_ready = true;
-		if (systicks % MQTT_UPDATE_T == 0) sample_ready = true;
+		if (systicks % VENT_TICK_T == 0) tick_ready = true;
+		if (systicks % MQTT_UPDATE_TIMEOUT == 0) sample_ready = true;
 	}
 
 	void PIN_INT0_IRQHandler(void)
@@ -221,7 +226,7 @@ int main(void) {
     /* Configure MQTT */
     MQTT mqtt(mqtt_message_handler);
     mqtt.connect(NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT);
-    mqtt.subscribe(MQTT_TOPIC_R);
+    mqtt.subscribe(MQTT_TOPIC_RECEIVE);
 
     /* Initialize main state machine */
     SmartVent ventilation(&pressure_sensor, &abb_drive);
@@ -255,7 +260,7 @@ int main(void) {
     	// Obtain sample and send over mqtt
     	if (sample_ready) {
     		std::string sample = get_sample_json(&ventilation, sample_number++);
-    		mqtt_status = mqtt.publish(MQTT_TOPIC_S, sample, sample.length());
+    		mqtt_status = mqtt.publish(MQTT_TOPIC_SEND, sample, sample.length());
     		uart.write("MQTT status: " + std::to_string(mqtt_status) + "\r\n");
 
     		sample_ready = false;
@@ -267,24 +272,28 @@ int main(void) {
     		handle_mqtt_input(&ventilation, menu_items);
     	}
 
-    	// Error handling
-    	if (mqtt_status != 0) {
+    	// MQTT Error handling. TODO: Reconnect
+    	if (mqtt_status != MQTT_OK) {
     		mqtt.disconnect();
     		lcd.print("Error: MQTT connection is lost.");
     		ERROR_CONDITION();
     	}
 
-    	if (status.operation_status == -1) {
-    		lcd.print("Error: Critical HW component failure.");
-    		delay_systick(TIMEOUT_TIME);
+    	// Component failure handling
+    	if (status.operation_status == VENT_HARDWARE_ERROR) {
+    		lcd.print("Error:");
+    		lcd.print("Component error", LCD_NEXT_LINE);
+    		delay_systick(ERROR_TIMEOUT);
     	}
 
-    	if (status.operation_status == -2) {
-    		lcd.print("Error: Timeout when trying to reach pressure.");
-    		delay_systick(TIMEOUT_TIME);
+    	// Setpoint timeout failure handling
+    	if (status.operation_status == VENT_TIMEOUT_ERROR) {
+    		lcd.print("Error:");
+    		lcd.print("Setpoint timeout", LCD_NEXT_LINE);
+    		delay_systick(ERROR_TIMEOUT);
     	}
 
-    	mqtt_status = mqtt.yield(100);
+    	mqtt_status = mqtt.yield(MQTT_YIELD_TIME);
     }
 
     return 0;
