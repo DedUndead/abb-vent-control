@@ -10,19 +10,19 @@ const DataSchema = new mongoose.Schema({
         require: true
     },
     setpoint: {
-        type: String,
+        type: Number,
         require: true
     },
     pressure: {
         type: Number,
         require: true
     },
-    auto: {
-        type: Boolean,
+    mode: {
+        type: Number,
         require: true
     },
-    error: {
-        type: Boolean,
+    status: {
+        type: Number,
         require: true
     }
 }, {timestamps:true});
