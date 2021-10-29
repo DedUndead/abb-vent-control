@@ -1,5 +1,4 @@
 const express = require('express');
-const expressLayouts = require('express-ejs-layouts');
 const mongoose = require('mongoose');
 const flash = require('connect-flash')
 const session = require('express-session');
@@ -7,6 +6,8 @@ const passport = require('passport');
 const mqtt = require('async-mqtt');
 const { Server } = require("socket.io");
 const { createServer } = require("http");
+const mongoStore = require('connect-mongo');
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -36,7 +37,7 @@ const mqtt_client = mqtt.connect('mqtt://18.198.188.151:21883')
 
 // connect to broker and subscribe
 mqtt_client.on('connect', function () {
-    mqtt_client.subscribe('/iot/grp1', function (err) {
+    mqtt_client.subscribe('/iot/grp1/mcu', function (err) {
         if (err) {
             console.log("error encountered")
             mqtt_client.reconnect()
@@ -50,15 +51,15 @@ mqtt_client.on('connect', function () {
 // Handle new mqtt message
 mqtt_client.on('message', async function (topic, message) {
     let input = JSON.parse(message)
-    console.log(input)
+    console.log("Received: " + JSON.stringify(input))
     io.emit("stats", input);
     let sensorData = new Data({
                             nr: input.nr, 
                             speed: input.speed, 
                             setpoint: input.setpoint,
                             pressure: input.pressure,
-                            auto: input.mode,
-                            error: input.status
+                            mode: input.mode,
+                            status: input.status
                         })
     sensorData.save((err,info) => {
         if(err) console.log(err)
@@ -70,18 +71,14 @@ io.on("connection", (socket) => {
     console.log("New connection: "+socket.id);
 
     // Handle updates from client
-    socket.on('update', function (data) {
-        //console.log("Got Data from client: " + JSON.stringify(data));
-        // todo:
-        // * parse and transform data
-        // * publish serialized data on MQTT
-
-        console.log(data)
-        //mqtt_client.publish('client_update', "test_data");
+    socket.on('update_mqtt', function (data) {
+        console.log("mqtt publish: " + JSON.stringify(data))
+        mqtt_client.publish('/iot/grp1/web', JSON.stringify(data));
     });
     
     // Handle user activity update
-    socket.on('user_activity', async function (userData) { 
+    socket.on('update_userdb', async function (userData) {
+        //console.log("updated userdb")
         let member = await retrieveUserActivityData();
         member[0].events.push(userData)
         //console.log(member[0].events);
@@ -99,7 +96,6 @@ require('./config/passport')(passport);
 
 // EJS
 app.use(express.static('./public/'))
-app.use(expressLayouts);
 app.set('view engine', 'ejs');
 
 // Bodyparser
@@ -109,7 +105,8 @@ app.use(express.urlencoded({extended:false}));
 app.use(session({
     secret: 'secret',
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    store: mongoStore.create({mongoUrl: db})
 }));
 
 // Passport middleware

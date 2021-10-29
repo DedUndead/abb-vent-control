@@ -1,94 +1,74 @@
 //	init socket
 const socket = io("localhost:3000");
 
-//	important elements
-const pressureSlider = document.getElementById('sliderPressure');
-const displayPressure = document.getElementById('displayPressure');
-const pressureContainer = document.getElementById('sliderPressureContainer');
-
-const speedSlider = document.getElementById('sliderSpeed');
-const displaySpeed = document.getElementById('displaySpeed');
-const speedContainer = document.getElementById('sliderSpeedContainer');
-
-let mode = document.getElementById('toggleBtn')
-const currentPressure = document.getElementById("pressure")
-
 socket.on("connect", () => {  
-	console.log(socket.id); 
+    console.log("Socket id: " + socket.id); 
 });
 
-// update stats realtime
+//	Update stats realtime
 socket.on("stats", (data) => {
-	// set current pressure
-	currentPressure.innerHTML = "Current pressure: " + data.pressure + "Pa";
 
-	// set slider values
-	pressureSlider.value = data.setpoint;
-	displayPressure.innerHTML = data.setpoint + "Pa";
+	let current_pressure = document.getElementById("pressure")
+	let mode = document.getElementById('toggleBtn')
 
-	speedSlider.value = data.speed;
-	displaySpeed.innerHTML = data.speed + "%";
+	let pressure_slider = document.getElementById('sliderPressure');
+	let display_pressure = document.getElementById('displayPressure');
+	let pressure_container = document.getElementById('sliderPressureContainer');
 
-	// show correct slider
-	if(data.mode === true) {
+	let speed_slider = document.getElementById('sliderSpeed');
+	let display_speed = document.getElementById('displaySpeed');
+	let speed_container = document.getElementById('sliderSpeedContainer');
+
+	// update current pressure
+	current_pressure.innerHTML = "Current pressure: " + data.pressure + "Pa";
+
+	// update fan svg
+	// updte_fan_svg()
+
+	// update slider values
+	pressure_slider.value = data.setpoint;
+	speed_slider.value = data.speed;
+	display_pressure.innerHTML = data.setpoint + "Pa";
+	display_speed.innerHTML = data.speed + "%";
+
+	//	update correct slider
+    if(data.mode == 1) {
 		mode.checked = true;
 
 		// show pressure
-		pressureContainer.hidden = false;
-		speedContainer.hidden = true;
+		pressure_container.hidden = false;
+		speed_container.hidden = true;
 	}
 	else {
 		mode.checked = false;
 
 		// show speed
-		pressureContainer.hidden = true;
-		speedContainer.hidden = false;
+		pressure_container.hidden = true;
+		speed_container.hidden = false;
 	}
 });
 
+//	Emit data needed to update the MCU
 function update_mqtt(){
-	let data = {
-		speed : speedSlider.value,
-		setpoint : pressureSlider.value,
-		mode : mode.value
+	//	Get necessary elements
+	let speed_slider = document.getElementById('sliderSpeed');
+	let pressure_slider = document.getElementById('sliderPressure');
+	let mode = document.getElementById('toggleBtn')
+
+	let mqtt_data = {
+		speed : + speed_slider.value,
+		setpoint : + pressure_slider.value,
+		mode : + mode.checked
 	}
-	socket.emit("update", data)
-	console.log(data.mode)
+	socket.emit("update_mqtt", mqtt_data)
 }
 
-
-document.getElementById('sliderPressure').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"PRESSURE_SLIDER",
-			description:"Pressure slider changed value",
-			value: event.target.value
-		};
-
-	socket.emit("user_activity", userData);
-	update_mqtt();
-});
-
-document.getElementById('sliderSpeed').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"SPEED_SLIDER",
-			description:"Speed slider changed value",
-			value: event.target.value
-		};
-
-	socket.emit("user_activity", userData);
-	update_mqtt();
-});
-
-document.getElementById('toggleBtn').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"TOGGLE_BUTTON",
-			description:"Toggle button has been pressed",
-			value: event.target.checked
-		};
-
-	socket.emit("user_activity", userData);
-	update_mqtt();
-});
+//	Emit data needed tu update the user activity db
+function update_userdb(type_, desc_, val_){
+	let user_data = {
+		type: type_,
+		description: desc_,
+		value: val_
+	};
+	socket.emit("update_userdb", user_data);
+}

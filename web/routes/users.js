@@ -33,7 +33,8 @@ router.post('/login', (req,res,next) => {
 
 router.get('/dashboard', ensureAuthenticated, async (req,res) => { 
     const fanPressure = await retrieveData();
-    res.render('dashboard', {"pressure": fanPressure[0]});
+    console.log(fanPressure[0])
+    res.render('dashboard', {"stats": fanPressure[0]});
 });
 
 router.get('/stats', ensureAuthenticated, async (req,res) =>{
