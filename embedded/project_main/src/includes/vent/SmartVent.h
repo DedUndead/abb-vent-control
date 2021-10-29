@@ -13,7 +13,7 @@
 #define STATUS_TIMEOUT -2
 #define FREQ_STEP	    1
 #define PRES_ERROR      0
-#define MAX_FREQ		20000
+#define MAX_FREQ		100
 #define MIN_FREQ		0
 
 class SmartVent;

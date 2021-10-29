@@ -21,14 +21,16 @@ IntegerEdit::~IntegerEdit() {
 
 void IntegerEdit::increment() {
 	if (!adjustable) return;
-	if (edit + step_size > upper_limit) return;
+
 	edit += step_size;
+	if (edit > upper_limit) edit = 0;
 }
 
 void IntegerEdit::decrement() {
 	if (!adjustable) return;
-	if (edit - step_size < lower_limit) return;
+
 	edit -= step_size;
+	if (edit < lower_limit) edit = upper_limit;
 }
 
 void IntegerEdit::accept() {

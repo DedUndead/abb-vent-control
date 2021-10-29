@@ -14,13 +14,13 @@ StringEdit::~StringEdit() {
 }
 
 void StringEdit::increment() {
-	if (edit + 1 > length - 1) return;
 	edit++;
+	if (edit > length - 1) edit = 0;
 }
 
 void StringEdit::decrement() {
-	if (edit - 1 < 0) return;
 	edit--;
+	if (edit < 0) edit = length - 1;
 }
 
 void StringEdit::accept() {
