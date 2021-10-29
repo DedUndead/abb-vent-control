@@ -31,6 +31,7 @@
 #include "menu/SimpleMenu.h"
 #include "menu/IntegerEdit.h"
 #include "menu/StringEdit.h"
+#include "menu/EventQueue.h"
 #include "vent/SmartVent.h"
 #include "vent/Event.h"
 #include "json/json.hpp"
@@ -86,6 +87,7 @@ static volatile std::atomic_int delay(0);
 static volatile uint32_t systicks(0);
 static volatile uint32_t last_pressed(0);
 static SimpleMenu* menu_ptr(nullptr);
+static EventQueue* menu_events_ptr(nullptr);
 static volatile bool sample_ready(false);
 static volatile bool tick_ready(false);
 static std::string mqtt_message("");
@@ -110,7 +112,7 @@ extern "C" {
 		if (millis() - last_pressed < DEBOUNCE) return;
 		last_pressed = millis();
 
-		menu_ptr->event(MenuItem::up);
+		menu_events_ptr->publish(MenuItem::up);
 	}
 
 	void PIN_INT1_IRQHandler(void)
@@ -121,7 +123,7 @@ extern "C" {
 		if (millis() - last_pressed < DEBOUNCE) return;
 		last_pressed = millis();
 
-		menu_ptr->event(MenuItem::ok);
+		menu_events_ptr->publish(MenuItem::ok);
 	}
 
 	void PIN_INT2_IRQHandler(void)
@@ -132,7 +134,7 @@ extern "C" {
 		if (millis() - last_pressed < DEBOUNCE) return;
 		last_pressed = millis();
 
-		menu_ptr->event(MenuItem::down);
+		menu_events_ptr->publish(MenuItem::down);
 	}
 }
 
@@ -175,6 +177,7 @@ int main(void) {
 
     /* Initialize menu */
     SimpleMenu menu;
+    EventQueue menu_queue;
 
     std::string labels[MENU_LABELS_N] = { "Manual", "Automatic" };
     StringEdit mode(&lcd, std::string("Mode"), labels, MENU_LABELS_N);
@@ -188,6 +191,7 @@ int main(void) {
     menu.addItem(new MenuItem(&pressure));
 
     menu_ptr = &menu;
+    menu_events_ptr = &menu_queue;
 
     /* Configure menu values */
     mode.setValue(0);
@@ -224,14 +228,16 @@ int main(void) {
     int sample_number = 0;
     int mqtt_status = 0;
     while (true) {
-    	// Obtain event requests from LCD UI
-    	handle_lcd_input(&ventilation, menu_items);
+    	while (menu_queue.pending()) menu.event(menu_queue.consume());
+    	handle_lcd_input(&ventilation, menu_items); // Obtain event requests from LCD UI
 
     	// Send tick event
     	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
+
     		status status = ventilation.get_status(); // Update ventilation status
 
+        	// Update LCD with new information arrived between ticks
     		update_lcd(&ventilation, menu_items);
 			uart.write("Frequency: " + std::to_string(status.frequency) + "\r\n");
 			uart.write("Pressure: " + std::to_string(status.pressure) + "\r\n");
@@ -493,7 +499,7 @@ void mqtt_message_handler(MessageData* data)
 	snprintf(
 			payload_parsed,
 			data->message->payloadlen + 1,
-			"%.*s\0",
+			"%.*s",
 			data->message->payloadlen,
 			(char *)data->message->payload
 	);
