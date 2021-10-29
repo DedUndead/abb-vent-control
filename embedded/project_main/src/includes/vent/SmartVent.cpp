@@ -199,16 +199,15 @@ void SmartVent::autoadjust_frequency()
 	// Automatic adjacement
 	if (current_status.pressure > current_status.target_pressure) {
 		target_frequency = current_status.frequency - FREQ_STEP;
-		timer = 0;
 	}
 	else {
 		target_frequency = current_status.frequency + FREQ_STEP;
-		timer = 0;
 	}
 
 	// Sanity check
-	if (target_frequency > MAX_FREQ) target_frequency = MAX_FREQ;
-	if (target_frequency < MIN_FREQ) target_frequency = MIN_FREQ;
+	if      (target_frequency > MAX_FREQ) target_frequency = MAX_FREQ;
+	else if (target_frequency < MIN_FREQ) target_frequency = MIN_FREQ;
+	else 								  timer = 0;
 
 	set_frequency(target_frequency);
 }
