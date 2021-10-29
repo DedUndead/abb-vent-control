@@ -61,6 +61,7 @@
 #define PRES_STEP      1
 #define MENU_ITEMS_NUM 4
 #define MQTT_UPDATE_T  5000
+#define TIMEOUT_TIME   5000
 
 /* SUPPORT FUNCTIONS AND TYPES DECLARATIONS */
 std::string get_sample_json(SmartVent* ventilation, int sample_number);
@@ -73,6 +74,7 @@ void handle_target_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MEN
 void handle_pressure(SmartVent* ventilation, PropertyEdit* menu_items[MENU_ITEMS_NUM], int pressure);
 void set_systick(const int& freq);
 void mqtt_message_handler(MessageData* data);
+void ERROR_CONDITION();
 
 void (*item_handlers[MENU_ITEMS_NUM])(SmartVent*, PropertyEdit*[MENU_ITEMS_NUM], int) = {
 		handle_mode,
@@ -227,15 +229,17 @@ int main(void) {
     /* Main polling loop */
     int sample_number = 0;
     int mqtt_status = 0;
+    status status;
     while (true) {
+    	// Obtain event requests from LCD UI
     	while (menu_queue.pending()) menu.event(menu_queue.consume());
-    	handle_lcd_input(&ventilation, menu_items); // Obtain event requests from LCD UI
+    	handle_lcd_input(&ventilation, menu_items);
 
     	// Send tick event
     	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
 
-    		status status = ventilation.get_status(); // Update ventilation status
+    		status = ventilation.get_status(); // Update ventilation status
 
         	// Update LCD with new information arrived between ticks
     		update_lcd(&ventilation, menu_items);
@@ -264,6 +268,21 @@ int main(void) {
     	}
 
     	// Error handling
+    	if (mqtt_status != 0) {
+    		mqtt.disconnect();
+    		lcd.print("Error: MQTT connection is lost.");
+    		ERROR_CONDITION();
+    	}
+
+    	if (status.operation_status == -1) {
+    		lcd.print("Error: Critical HW component failure.");
+    		delay_systick(TIMEOUT_TIME);
+    	}
+
+    	if (status.operation_status == -2) {
+    		lcd.print("Error: Timeout when trying to reach pressure.");
+    		delay_systick(TIMEOUT_TIME);
+    	}
 
     	mqtt_status = mqtt.yield(100);
     }
@@ -504,4 +523,9 @@ void mqtt_message_handler(MessageData* data)
 			(char *)data->message->payload
 	);
 	mqtt_message = payload_parsed;
+}
+
+void ERROR_CONDITION()
+{
+	while (true) delay_systick(100);
 }
