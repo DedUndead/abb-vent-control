@@ -238,6 +238,6 @@ void SmartVent::set_frequency(int value)
  */
 int SmartVent::linear_transform(int percent)
 {
-	return MAX_FREQ * percent / 100;
+	return FREQ_LIMIT_HZ * percent / 100;
 }
 
