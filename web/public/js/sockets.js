@@ -32,7 +32,7 @@ socket.on("stats", (data) => {
 	display_speed.innerHTML = data.speed + "%";
 
 	//	update correct slider
-	if(data.mode == 1) {
+    if(data.mode == 1) {
 		mode.checked = true;
 
 		// show pressure

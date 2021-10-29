@@ -1,12 +1,3 @@
-//  Create svg animation
-var fan_speed = anime({
-    targets: ".fanSvg",
-    easing: "linear",
-    rotate: "1turn",
-    loop: true,
-    duration: 1000,
-});
-
 var blocking = false
 var changed_during_blocking = false
 var blocking_duration = 1000
@@ -36,16 +27,6 @@ function handle_mqtt_update(){
         console.log("will update after unblock...")
         changed_during_blocking = true
     }
-}
-
-function refresh_switch(){
-    let pressure_container = document.getElementById("sliderPressureContainer");
-    let speed_container = document.getElementById("sliderSpeedContainer");
-    let mode_switch = document.getElementById("toggleBtn");
-
-    // mode_switch.checked = true
-    pressure_container.hidden = false;
-    speed_container.hidden = true;
 }
 
 document.getElementById("sliderPressure").addEventListener("change", (event) => {
@@ -95,4 +76,11 @@ document.getElementById("toggleBtn").addEventListener("change", (event) => {
     handle_mqtt_update()
 });
 
-// refresh_switch()
+//  Create svg animation
+anime({
+    targets: ".fanSvg",
+    easing: "linear",
+    rotate: "1turn",
+    loop: true,
+    duration: 1000,
+});
