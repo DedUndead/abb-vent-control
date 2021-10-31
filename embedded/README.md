@@ -31,11 +31,11 @@ The following diagram describes the hardware architecure, that includes the comp
 
 More detailed information is provided further in schematics.
 
-### Schematics
+## Schematics
 ![Overall project arcitecture](https://i.imgur.com/IRX7cOy.png)
 Full HD link: [Schematics FULL HD](https://i.imgur.com/IRX7cOy.png)
 
-### Components used
+## Components used
 
 MCU LPC1549: [MCU](https://www.nxp.com/docs/en/data-sheet/LPC15XX.pdf)<br>
 LCD: Not specified, containg backlight<br>
@@ -65,7 +65,7 @@ Colors on the diagram describe when interaction is happening.<br>
 
 Some of the complex concepts are described in details.
 
-### State machine
+## State machine
 
 State machine architecture is described in the UML, introduced in this section.
 
@@ -89,7 +89,7 @@ Additionally, there should be a member function for exporting data and status (r
 
 The described is recommended and current implementation. Differences and improvements are possible.
 
-### Main handlers
+## Main handlers
 
 The idea behind main handlers is to have a "connector" that will keep WEB UI, LCD and State machine syncronized.<br>
 In order to achieve this syncronization, handler functions are called with periodicity described in the software acrhitecture diagram.<br>
@@ -101,7 +101,7 @@ General algorithms for handlers:<br>
 1. If LCD_CURRENT != value, then update LCD
 2. If STATE_MACHINE_CURRENT != value, then update STATE_MACHINE
 
-### Usage of external libraries
+## Usage of external libraries
 
 One external library was used for JSON parsing.<br>
 Credits: [JSON](https://github.com/nlohmann/json)
