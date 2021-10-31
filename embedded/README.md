@@ -23,7 +23,15 @@ Considering several input and output methods, software needs to syncronize LCD, 
 
 ## Hardware Architecture
 
-Insert diagram here
+The following diagram describes the hardware architecure, that includes the components described above, in the abstract form.
+
+![Hardware Architecture](../images/hw_architecture.png)
+
+More detailed information is provided further in schematics.
+
+### Schematics
+![Overall project arcitecture](https://i.imgur.com/IRX7cOy.png)
+Full HD link: [Schematics FULL HD](https://i.imgur.com/IRX7cOy.png)
 
 ## Software Architecture
 
