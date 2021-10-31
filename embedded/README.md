@@ -3,6 +3,8 @@
 Embedded Software is written for LPC1549 development board.<br>
 Primary language is C++.
 
+The project creates a smart system solution for adjusting and monitoring pressure in ventilation, using ABB frequency controller simulator.
+
 ## Overview
 
 Pictures and general description of the project is provided in root folder.
