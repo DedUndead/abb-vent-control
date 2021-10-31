@@ -275,7 +275,9 @@ int main(void) {
     	// MQTT Error handling. TODO: Reconnect
     	if (mqtt_status != MQTT_OK) {
     		mqtt.disconnect();
-    		lcd.print("Error: MQTT connection is lost.");
+    		lcd.print("Error: MQTT");
+    		lcd.print("Connection lost", LCD_NEXT_LINE);
+
     		ERROR_CONDITION();
     	}
 
@@ -283,14 +285,18 @@ int main(void) {
     	if (status.operation_status == VENT_HARDWARE_ERROR) {
     		lcd.print("Error:");
     		lcd.print("Component error", LCD_NEXT_LINE);
+
     		delay_systick(ERROR_TIMEOUT);
+    		menu.event(MenuItem::show);
     	}
 
     	// Setpoint timeout failure handling
     	if (status.operation_status == VENT_TIMEOUT_ERROR) {
     		lcd.print("Error:");
     		lcd.print("Setpoint timeout", LCD_NEXT_LINE);
+
     		delay_systick(ERROR_TIMEOUT);
+    		menu.event(MenuItem::show);
     	}
 
     	mqtt_status = mqtt.yield(MQTT_YIELD_TIME);

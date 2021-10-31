@@ -140,6 +140,7 @@ void SmartVent::set_pressure(const Event& e)
 
 		// Timeout
 		if (timer >= 10) {
+			current_status.target_pressure = current_status.pressure;
 			current_status.operation_status = STATUS_TIMEOUT;
 			set_state(&SmartVent::mode_auto);
 		}
@@ -175,6 +176,7 @@ int SmartVent::read_pressure()
 	}
 	else {
 		current_status.operation_status = STATUS_OK;
+		if (result > MAX_PRESSURE) result = MAX_PRESSURE;
 		return result;
 	}
 }
@@ -239,4 +241,3 @@ int SmartVent::linear_transform(int percent)
 {
 	return FREQ_LIMIT_HZ * percent / 100;
 }
-
