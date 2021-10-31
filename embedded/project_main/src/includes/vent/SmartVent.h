@@ -16,7 +16,7 @@
 #define FREQ_LIMIT_HZ   20000
 #define MAX_FREQ		100
 #define MIN_FREQ		0
-#define MAX_PRESSURE    120
+#define MAX_PRESSURE    125
 
 class SmartVent;
 
