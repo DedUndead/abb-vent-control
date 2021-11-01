@@ -38,17 +38,26 @@ In addition , the user can see the overall statistics of the data stored in the 
 #### 
 
 ## User Manual
-To run the web application, there are some prerequierments: 
-1. Install the NodeJS framework
-2. Install the modules listed above 
-3. Run the web application
+To run the web application, there three possible ways to download the application:
 
-#### Install the NodeJS framework
-<pre><code> npm init
-</code></pre>
+#### GitHub CLI
+We can use the following command: 
+<pre><code>gh repo clone DedUndead/ABB-Vent-Control</code></pre>
+ 
+#### HTTPS
+1. Open Git Bash
+2. Change the to the directory that you wish to clone to repository to
+3. Enter the following command:
+<pre><code>git clone https://github.com/DedUndead/ABB-Vent-Control.git </code></pre>
 
-#### Install the modules listed above 
-<pre><code> npm install animejs, async-mqtt, bcrypt, connect-flash, connect-mongo, ejs, express, express-session, mongodb, mongoose, passport, passport-local, socket.io, nodemon, chartjs
-</code></pre>
+#### GitHub desktop
+GitHub desktop is a GUI version of Git Bash/ GitHub CLI. In there the user has all kind of options in a click of a button.
 
 #### Run the web application
+To run the web application, follow the following steps:
+1. Have a terminal open in the directory where the application is located
+2. run the following command: 
+<pre><code>npm run dev</code></pre>
+3. Enter http://localhost:3000/ in your web browser
+4. Ask the devlopers for the credentials to access the resource of the web application
+
