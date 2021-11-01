@@ -84,7 +84,7 @@ function retrieve_sensor_data_dates(date_range) {
 // MQTT conf
 const mqtt_client = mqtt.connect('mqtt://18.198.188.151:21883')
 
-// connect to broker and subscribe
+// Connect to broker and subscribe
 mqtt_client.on('connect', function () {
     mqtt_client.subscribe('/iot/grp1/mcu', function (err) {
         if (err) {
@@ -112,6 +112,7 @@ mqtt_client.on('message', async function (topic, message) {
         mode: input.mode,
         status: input.status
     });
+
     sensor_data.save((err,info) => {
         if(err) console.log(err)
     });
@@ -124,13 +125,14 @@ io.on("connection", (socket) => {
     // Handle updates from client
     socket.on('update_mqtt', function (data) {
         console.log("mqtt publish: " + JSON.stringify(data))
-            mqtt_client.publish('/iot/grp1/web', JSON.stringify(data));
+        mqtt_client.publish('/iot/grp1/web', JSON.stringify(data));
     });
 
     // Handle user activity update
     socket.on('update_userdb', async function (userData) {
         let member = await retrieve_one_user_activity_data();
         member[0].events.push(userData)
+        
         let update = await UserActivity.findOneAndUpdate({ member: member[0].member, session: member[0].session, }, { events: member[0].events }, { new: true });
         update.save((err,info) => {
             if(err) console.log(err)
