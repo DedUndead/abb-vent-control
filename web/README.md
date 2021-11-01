@@ -113,3 +113,6 @@ Bar chart - displays the count of sessions that a user had on the web applicatio
 Pie chart - displays the event impact on the web application by each user
 Line chart 1 - displays the fan speed according to the date range placed by the user.
 Line chart 2 - displays the fan pressure according to the date range placed by the user.
+
+## Server - Client communication
+![Server - Client communication](stats_dashboard_architecture.png "Server - Client communication diagram")
