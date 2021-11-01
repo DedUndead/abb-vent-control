@@ -5,12 +5,12 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const UserActivity = require('../models/UserActivity');
 
-function validateEmail(email) {
+function validate_email(email) {
     let re = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
     return re.test((String(email).toLowerCase()));
 }
 
-function compatibleEmail(email) { 
+function compatible_email(email) { 
     const arr = email.split(".");
 
     for (var i = 0; i < (arr.length-1); i++) {
@@ -28,9 +28,9 @@ module.exports = async function(passport) {
             //Match User
             try {
                 // 2nd check for correct email input
-                if(validateEmail(email) == true) {
+                if(validate_email(email) == true) {
                     // Fromat email to match db email
-                    email = compatibleEmail(email);
+                    email = compatible_email(email);
                 }
 
                 const user = await User.findOne({email: email});

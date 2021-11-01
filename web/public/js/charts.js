@@ -1,10 +1,11 @@
 const socket = io("localhost:3000");
 
 /**
- * generate random colors
- * @return [string] returns a random number 
+ * @function get_random_color
+ * @description generate random colors
+ * @return {String} returns a random color string
  **/
-function getRandomColor() {
+function get_random_color() {
     var letters = '0123456789ABCDEF';
     var color = '#';
     for (var i = 0; i < 6; i++) {
@@ -13,6 +14,7 @@ function getRandomColor() {
     return color;
 }
 
+// Retrieves the user sessions data from the database
 socket.emit("get_sessions_data");
 socket.on("send_sessions_data", (user_sessions) => {
     line_chart("pressure_line_chart_container","myPressureLineChart",0, 0, "Pressure Line Chart");
@@ -27,7 +29,7 @@ socket.on("send_sessions_data", (user_sessions) => {
     user_sessions.forEach(session_data => {
         x_axis_members.push(session_data._id.replace(',', ' '));
         y_axis_sessions.push(session_data.sessions)
-        colors.push(getRandomColor());
+        colors.push(get_random_color());
     })
 
     for (let i = 0; i < x_axis_members.length; i++) {
@@ -61,8 +63,9 @@ socket.on("send_sessions_data", (user_sessions) => {
         }
     };
     const myChart = new Chart(ctx, config);
-})
+})  
 
+// Retrieves the user events data from the database
 socket.emit("get_events_data");
 socket.on("send_events_data", (user_events) => {
 
@@ -77,7 +80,7 @@ socket.on("send_events_data", (user_events) => {
     user_events.forEach(event_data => {
         legend.push(event_data._id.replace(',', ' '));
         event_count.push(event_data.events)
-        pie_colors.push(getRandomColor());
+        pie_colors.push(get_random_color());
     })
 
     const data = {
@@ -121,8 +124,8 @@ target_user_date.setSeconds(0);
 target_user_date.setMilliseconds(0);
 form_target.target_date.valueAsDate = form_target.target_time.valueAsDate = target_user_date;
 
+// On click sends user input to the server
 const submit_date = document.getElementById('submit');
-
 submit_date.addEventListener("click", (event) => {
     // Set input date
     let user_date_input = {
@@ -134,6 +137,7 @@ submit_date.addEventListener("click", (event) => {
     socket.emit('get_sensor_data', user_date_input)
 });
 
+// Retrives sensor data from the server
 socket.on('send_sensor_data', (sensor_data) => {
 
     let x_axis = [];
@@ -151,16 +155,17 @@ socket.on('send_sensor_data', (sensor_data) => {
 
 
 /**
- * Description
- * @param [type] name Description
- * @param
- * @param
- * @param
- * @param
- * @return [type]  Description 
+ * @function line_chart
+ * @description Creates line chart
+ * @param {String} id_name_div gets the div element in the html page
+ * @param {String} id_name_canva gets the canvas element in the html page
+ * @param {Array} x_axis sets the x axis of the line chart
+ * @param {Array} y_axis sets the y axis of the line chart
+ * @param {String} title_name sets the title of the line chart
+ * @return no return
  **/
 function line_chart(id_name_div, id_name_canva, x_axis, y_axis, title_name) {
-    resetCanva(id_name_div, id_name_canva);
+    reset_canva(id_name_div, id_name_canva);
     const ctx = document.getElementById(id_name_canva).getContext("2d");
 
     const data = {
@@ -223,12 +228,13 @@ function line_chart(id_name_div, id_name_canva, x_axis, y_axis, title_name) {
 
 
 /**
- * Description
- * @param [type] name Description
- * @param
- * @return [type]  Description 
+ * @function reset_canva
+ * @description resets the canvas element to enable pushing new data to line charts
+ * @param {String} id_name_div gets the div element in the html page
+ * @param {String} id_name_canva gets the canvas element in the html page
+ * @return no return
  **/
-function resetCanva(id_name_div,id_name_canva) {
+function reset_canva(id_name_div,id_name_canva) {
     let div = document.getElementById(id_name_div);
     let canvas = document.createElement('canvas');
 
