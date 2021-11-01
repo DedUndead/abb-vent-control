@@ -20,21 +20,21 @@ In addition , the user can see the overall statistics of the data stored in the 
 | MongoDB    | Database    |
 
 #### Modules
-* [This link](https://www.npmjs.com/package/animejs)animejs - Lightweight JavaScript animation library 
-* [This link](https://www.npmjs.com/package/async-mqtt)async-mqtt - JavaScript client library for MQTT protocol
-* [This link](https://www.npmjs.com/package/bcrypt)bcrypt - JavaScript library to encrypt passwords
-* [This link](https://www.npmjs.com/package/connect-flash)connect-flash - library to handle temporary messages
-* [This link](https://www.npmjs.com/package/connect-mongo)connect-mongo - library to handle user session in the website
-* [This link](https://www.npmjs.com/search?q=ejs)ejs - Template language to allow JavaScript in HTML markup
-* [This link](https://www.npmjs.com/package/express)express - Minimal and flexible Node.js web application framework
-* [This link](https://www.npmjs.com/package/express-session)express-session - Handles user session to store user session ID in the server-side
-* [This link](https://www.npmjs.com/package/mongodb)mongodb - Handles the connection between the server to MongoDB
-* [This link](https://www.npmjs.com/package/mongoose)mongoose - MongoDB object modeling tool which is designed to work in asynchronous environment
-* [This link](https://www.npmjs.com/package/passport)passport - authentication middleware for NodeJS
-* [This link](https://www.npmjs.com/package/passport-local)passport-local - passport strategy for authentication
-* [This link](https://www.npmjs.com/package/socket.io)socket.io - handles real time bidirectional event-based
-* [This link](https://www.npmjs.com/package/nodemon)nodemon - module to assist NodeJS application development 
-* [This link](https://www.npmjs.com/package/chartjs)chartjs - library to handle charts on HTML
+* [animejs](https://www.npmjs.com/package/animejs) - Lightweight JavaScript animation library 
+* [async-mqtt](https://www.npmjs.com/package/async-mqtt) - JavaScript client library for MQTT protocol
+* [bcrypt](https://www.npmjs.com/package/bcrypt) - JavaScript library to encrypt passwords
+* [connect-flash](https://www.npmjs.com/package/connect-flash) - library to handle temporary messages
+* [connect-mongo](https://www.npmjs.com/package/connect-mongo) - library to handle user session in the website
+* [ejs](https://www.npmjs.com/search?q=ejs) - Template language to allow JavaScript in HTML markup
+* [express](https://www.npmjs.com/package/express) - Minimal and flexible Node.js web application framework
+* [express-session](https://www.npmjs.com/package/express-session) - Handles user session to store user session ID in the server-side
+* [mongodb](https://www.npmjs.com/package/mongodb) - Handles the connection between the server to MongoDB
+* [mongoose](https://www.npmjs.com/package/mongoose) - MongoDB object modeling tool which is designed to work in asynchronous environment
+* [passport](https://www.npmjs.com/package/passport) - authentication middleware for NodeJS
+* [passport-local](https://www.npmjs.com/package/passport-local) - passport strategy for authentication
+* [socket.io](https://www.npmjs.com/package/socket.io) - handles real time bidirectional event-based
+* [nodemon](https://www.npmjs.com/package/nodemon) - module to assist NodeJS application development 
+* [chartjs](https://www.npmjs.com/package/chartjs) - library to handle charts on HTML
 #### 
 
 ## User Manual
