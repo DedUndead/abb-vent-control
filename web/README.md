@@ -67,7 +67,7 @@ The web application consists of several functionalities:
 1. Authentication
 2. Communication with the database
 3. Communication with the ABB-vent via MQTT
-4. Communication between client and server via web sockets.
+4. Communication via web sockets
 5. Visualizing data
 
 #### Authentication
@@ -92,3 +92,18 @@ User session, to increase the longevity of the user on the website without the n
 #### Communication with the ABB-vent via MQTT
 On the server-side of the web application exists an MQTT communication functionality. By having this functionality, the server can send data and receive data via the MQTT communication protocol.  The data sent and received is in JSON format. 
 The data received by the MQTT is stored in the database and affects different elements on the webpage. For example, the sliders, the toggle button, and more. In addition, the data sent from the server will affect the ABB-vent according to the settings set by the web application.
+
+#### Communication via web sockets
+Web sockets enable the real-time transfer of data between the client-side to the server-side of the web application. In this web application, we use a web socket to pass sensor data from the server-side to the client-side to adjust the elements inside of the webpage. In addition, the client-slide can set the configuration of the ABB-vent with the elements present on the Dashboard page.  The web socket will react to change and send the data to the server-side.
+
+The use of web sockets comes in handy to assist in visualizing data. On the stats page, the web socket delivers the data from the database into the webpage and visualizes it. 
+
+How does it work? 
+The web socket prompts the server-side that the webpage is loaded or on user input. When the server-side receives that notification, it retrieves the data from the database and prompts the client-side that the data is ready. The client-side uses the data to visualize or adjust elements on the webpage. A similar chain of actions happens on the dashboard page.
+
+#### Visualizing data
+The data visualized is divided into four different sections:
+Bar chart - displays the count of sessions that a user had on the web application
+Pie chart - displays the event impact on the web application by each user
+Line chart 1 - displays the fan speed according to the date range placed by the user.
+Line chart 2 - displays the fan pressure according to the date range placed by the user.
