@@ -14,6 +14,7 @@ In addition , the user can see the overall statistics of the data stored in the 
 2. [Technology stack](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#technology-stack)
 3. [User Manual](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#user-manual)
 4. [Functionalities](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#functionalities) 
+5. [Server - Client Diagram](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#server---client-communication)
 
 ## Technology stack
 
