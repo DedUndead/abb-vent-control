@@ -10,11 +10,11 @@ Pressure - The user can change the pressure of the ABB vent when the mode is on 
 In addition , the user can see the overall statistics of the data stored in the database on the stats page. For example, user sessions, user activity, and data from the sensor in between two different times.
 
 ## Table of contents
-1. [Description](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#description)
-2. [Technology stack](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#technology-stack)
-3. [User Manual](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#user-manual)
-4. [Functionalities](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#functionalities) 
-5. [Server - Client Diagram](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#server---client-communication)
+1. [Description](https://github.com/DedUndead/ABB-Vent-Control/tree/main/web#description)
+2. [Technology stack](https://github.com/DedUndead/ABB-Vent-Control/tree/main/web#technology-stack)
+3. [User Manual](https://github.com/DedUndead/ABB-Vent-Control/tree/main/web#user-manual)
+4. [Functionalities](https://github.com/DedUndead/ABB-Vent-Control/tree/main/web#functionalities) 
+5. [Server - Client Diagram](https://github.com/DedUndead/ABB-Vent-Control/tree/main/web#server---client-communication)
 
 ## Technology stack
 
