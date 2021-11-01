@@ -61,3 +61,34 @@ To run the web application, follow the following steps:
 3. Enter http://localhost:3000/ in your web browser
 4. Ask the devlopers for the credentials to access the resource of the web application
 
+## Functionalities
+ 
+The web application consists of several functionalities: 
+1. Authentication
+2. Communication with the database
+3. Communication with the ABB-vent via MQTT
+4. Communication between client and server via web sockets.
+5. Visualizing data
+
+#### Authentication
+The web application will prompt the user with a login web page. The user will need to have a username and password, as the user database is pre-configured. 
+Authentication is a vital part of the web application since, without authentication, the user can not access any resources.
+
+The authentication uses the Passport module with a passport-local strategy. The concept validates that the username exists in the database, if it does not the user will be prompted with an error message. If the username exists, it will proceed and decrypt the password in the database and compare it with the input in the website. In case the password does not match, the user will be prompted with an error message.
+
+In addition, if a user tries to access the resources by entering a URL. The user is checked if the user is authenticated. If the user is not authenticated, the user will be redirected to the login page and prompted with an error message.
+
+#### Communication with the database
+The database of choice is MongoDB,  where we created four different clusters to handle the incoming and outgoing data. Mongoose facilitates the data handling in the following aspects:
+Creates models that will require the incoming data to match the requirements set by the schema model.
+Ease the interaction with the database.
+Works in an asynchronous environment
+As previously mentioned, the database stores four different kinds of data:
+ User's information for authentication
+ Sensor data received by the ABB-vent
+User activity on the website
+User session, to increase the longevity of the user on the website without the need to log in again
+
+#### Communication with the ABB-vent via MQTT
+On the server-side of the web application exists an MQTT communication functionality. By having this functionality, the server can send data and receive data via the MQTT communication protocol.  The data sent and received is in JSON format. 
+The data received by the MQTT is stored in the database and affects different elements on the webpage. For example, the sliders, the toggle button, and more. In addition, the data sent from the server will affect the ABB-vent according to the settings set by the web application.
