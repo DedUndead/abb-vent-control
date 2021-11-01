@@ -43,7 +43,7 @@
                     <div class="mt-1" id="displaySpeed"></div>
                 </div>
                 <div class="">
-                    <p class="text-left" id="pressure">Current pressure: <%-stats.pressure%>Pa</p>
+                    <p class="text-left" id="current_info"></p>
                 </div>
             </section>
         </main>
@@ -59,11 +59,15 @@
         let pressure_container = document.getElementById("sliderPressureContainer");
         let speed_container = document.getElementById("sliderSpeedContainer");
         if (<%= stats.mode %>) {
+            document.getElementById("current_info").innerHTML = "Current pressure: <%= stats.pressure %>Pa"
+
             document.getElementById("toggleBtn").checked = true
             pressure_container.hidden = false;
             speed_container.hidden = true;
         }
         else {
+            document.getElementById("current_info").innerHTML = "Current fan speed: <%= stats.speed %>%"
+
             document.getElementById("toggleBtn").checked = false
             pressure_container.hidden = true;
             speed_container.hidden = false;

@@ -14,7 +14,7 @@ socket.on("stats", (data) => {
     // Update dashboard if status is correct
     if(data.status == 1 || data.status == 0){
         // Save elements to variables
-        let current_pressure = document.getElementById("pressure")
+        let current_info = document.getElementById("current_info")
         let mode = document.getElementById('toggleBtn')
 
         let pressure_slider = document.getElementById('sliderPressure');
@@ -25,10 +25,7 @@ socket.on("stats", (data) => {
         let display_speed = document.getElementById('displaySpeed');
         let speed_container = document.getElementById('sliderSpeedContainer');
 
-        // Update current pressure
-        current_pressure.innerHTML = "Current pressure: " + data.pressure + "Pa";
-
-        // Ypdate slider values
+        // Update slider values
         pressure_slider.value = data.setpoint;
         speed_slider.value = data.speed;
         display_pressure.innerHTML = data.setpoint + "Pa";
@@ -38,12 +35,18 @@ socket.on("stats", (data) => {
         if(data.mode == 1) {
             mode.checked = true;
 
+            // Update current pressure
+            current_info.innerHTML = "Current pressure: " + data.pressure + "Pa";
+
             // Show pressure
             pressure_container.hidden = false;
             speed_container.hidden = true;
         }
         else {
             mode.checked = false;
+
+            // Update current speed
+            current_info.innerHTML = "Current fan speed: " + data.speed + "%";
 
             // Show speed
             pressure_container.hidden = true;
