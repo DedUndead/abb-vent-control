@@ -20,17 +20,44 @@ const db = require('./config/keys').MongoURI;
 const Data = require('./models/Data');
 const UserActivity = require('./models/UserActivity');
 
+mongoose.connect(db, { useNewUrlParser: true })
+    .then(() => console.log("MongoDB connected"))
+    .catch(err => console.log(err));
+
 function retrieveUserActivityData() {
     return UserActivity.find({})
-        .sort({createdAt: -1})
+        .sort({ createdAt: -1 })
         .limit(10)
         .exec();
 }
 
-mongoose.connect(db, {useNewUrlParser: true})
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.log(err));
+function retrieveUserSessionsData() {
+    return UserActivity.aggregate([
+        { $group: { _id: { member: "$member", session: "$session" }, number: { $sum: 1 } } },
+        { $group: { _id: "$_id.member", sessions: { $sum: 1 } } }
+    ])
+}
 
+function retrieveUserEventsData() {
+    return UserActivity.aggregate([
+        { $unwind: "$events" },
+        { $group: { _id: { member: "$member", events: "$events" }, number: { $sum: 1 } } },
+        { $group: { _id: "$_id.member", events: { $sum: 1 } } }
+    ])
+}
+
+function sensorDataDates(date_range) {
+    let start = date_range.start_date + 'T' + date_range.start_time + ":00.000Z";
+    console.log(start);
+    let end = date_range.target_date + 'T' + date_range.target_time + ":00.000Z";
+    console.log(end);
+    return Data.find({
+        createdAt: {
+            $gte: start,
+            $lt: end
+        }
+    })
+}
 
 // MQTT conf
 const mqtt_client = mqtt.connect('mqtt://18.198.188.151:21883')
@@ -54,41 +81,50 @@ mqtt_client.on('message', async function (topic, message) {
     console.log("Received: " + JSON.stringify(input))
     io.emit("stats", input);
     let sensorData = new Data({
-                            nr: input.nr, 
-                            speed: input.speed, 
-                            setpoint: input.setpoint,
-                            pressure: input.pressure,
-                            mode: input.mode,
-                            status: input.status
-                        })
-    sensorData.save((err,info) => {
-        if(err) console.log(err)
+        nr: input.nr,
+        speed: input.speed,
+        setpoint: input.setpoint,
+        pressure: input.pressure,
+        mode: input.mode,
+        status: input.status
     })
+    /*sensorData.save((err,info) => {
+        if(err) console.log(err)
+    })*/
 });
 
 // WebSocket conf
 io.on("connection", (socket) => {
-    console.log("New connection: "+socket.id);
+    console.log("New connection: " + socket.id);
 
     // Handle updates from client
     socket.on('update_mqtt', function (data) {
         console.log("mqtt publish: " + JSON.stringify(data))
-        mqtt_client.publish('/iot/grp1/web', JSON.stringify(data));
+        //mqtt_client.publish('/iot/grp1/web', JSON.stringify(data));
     });
-    
+
     // Handle user activity update
     socket.on('update_userdb', async function (userData) {
-        //console.log("updated userdb")
         let member = await retrieveUserActivityData();
         member[0].events.push(userData)
-        //console.log(member[0].events);
-        //console.log(member[0].session)
-        let update = await UserActivity.findOneAndUpdate({member:member[0].member ,session: member[0].session,}, {events: member[0].events}, {new:true});
-        //console.log(update);
+        let update = await UserActivity.findOneAndUpdate({ member: member[0].member, session: member[0].session, }, { events: member[0].events }, { new: true });
         update.save((err,info) => {
             if(err) console.log(err)
         })
     });
+
+    socket.on("get_sessions_data", async () => {
+        socket.emit("send_sessions_data", await retrieveUserSessionsData());
+    });
+
+    socket.on("get_events_data", async () => {
+        socket.emit("send_events_data", await retrieveUserEventsData());
+    });
+
+    socket.on('get_sensor_data', async (date_range) => {
+        socket.emit('send_sensor_data',await sensorDataDates(date_range));
+    })
+
 });
 
 // Passport config
@@ -99,14 +135,14 @@ app.use(express.static('./public/'))
 app.set('view engine', 'ejs');
 
 // Bodyparser
-app.use(express.urlencoded({extended:false}));
+app.use(express.urlencoded({ extended: false }));
 
 // Session
 app.use(session({
     secret: 'secret',
     resave: true,
     saveUninitialized: true,
-    store: mongoStore.create({mongoUrl: db})
+    store: mongoStore.create({ mongoUrl: db })
 }));
 
 // Passport middleware
@@ -117,7 +153,7 @@ app.use(passport.session());
 app.use(flash());
 
 // Global vars
-app.use((req,res,next) => {
+app.use((req, res, next) => {
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.error = req.flash('error');
