@@ -40,10 +40,10 @@
 #define DEBOUNCE             20
 #define VENT_TICK_T          1000
 #define INITIAL_DELAY        100
-#define MQTT_IP              (char *)"18.198.188.151"
+#define MQTT_IP              (char *)"MQTT_IP_HERE"
 #define MQTT_PORT            21883
-#define NETWORK_SSID         (char *)"V46D-1"
-#define NETWORK_PASS         (char *)"2483124831"
+#define NETWORK_SSID         (char *)"NETWORK_SSID_HERE"
+#define NETWORK_PASS         (char *)"NETWORK_PASS_HERE"
 #define MQTT_TOPIC_RECEIVE   (const char *)"/iot/grp1/web"
 #define MQTT_TOPIC_SEND      (const char *)"/iot/grp1/mcu"
 #define MQTT_BFR_LEN         240

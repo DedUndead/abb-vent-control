@@ -154,6 +154,7 @@ int main(void) {
     	if (tick_ready) {
     		ventilation.handle_state(Event(Event::eTick));
     		status = ventilation.get_status(); // Update ventilation status
+    		update_lcd(&ventilation, menu_items);
 
 			tick_ready = false;
     	}
