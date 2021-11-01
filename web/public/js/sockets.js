@@ -33,7 +33,7 @@ socket.on("stats", (data) => {
         display_pressure.innerHTML = data.setpoint + "Pa";
         display_speed.innerHTML = data.speed + "%";
         current_pressure.innerHTML = "Current pressure: " + data.pressure + "Pa"
-        current_speed.innerHTML = "Current fan speed: " + data.speed + "Pa"
+        current_speed.innerHTML = "Current fan speed: " + data.speed + "%"
 
         // Update correct slider
         if(data.mode == 1) {
