@@ -201,14 +201,14 @@ document.getElementById("toggleBtn").addEventListener("change", (event) => {
 
     // Auto mode
     if (mode.checked) {
-        current_info.innerHTML =  "Current pressure: " + document.getElementById("sliderPressure").value;
+        current_info.innerHTML =  "Current pressure: " + document.getElementById("sliderPressure").value + "Pa";
         pressure_container.hidden = false;
         speed_container.hidden = true;
     }
     
     // Manual mode
     else {
-        current_info.innerHTML = "Current fan speed: " + document.getElementById("sliderSpeed").value;
+        current_info.innerHTML = "Current fan speed: " + document.getElementById("sliderSpeed").value + "%";
         pressure_container.hidden = true;
         speed_container.hidden = false;
     }
