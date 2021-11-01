@@ -22,7 +22,6 @@ Internet of Things: ABB Ventilation Control group Project.
 * nodemon
 * chartjs
 
-
 #### 
 ## Overall project arcitecture
 ![Overall project arcitecture](images/diagram.png)
