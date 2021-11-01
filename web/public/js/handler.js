@@ -197,18 +197,17 @@ document.getElementById("toggleBtn").addEventListener("change", (event) => {
     let mode = document.getElementById('toggleBtn')
     let pressure_container = document.getElementById("sliderPressureContainer");
     let speed_container = document.getElementById("sliderSpeedContainer");
-    let current_info = document.getElementById("current_info")
 
     // Auto mode
     if (mode.checked) {
-        current_info.innerHTML =  "Current pressure: " + document.getElementById("sliderPressure").value + "Pa";
+        document.getElementById("speed").hidden = false
         pressure_container.hidden = false;
         speed_container.hidden = true;
     }
     
     // Manual mode
     else {
-        current_info.innerHTML = "Current fan speed: " + document.getElementById("sliderSpeed").value + "%";
+        document.getElementById("speed").hidden = true
         pressure_container.hidden = true;
         speed_container.hidden = false;
     }

@@ -43,7 +43,8 @@
                     <div class="mt-1" id="displaySpeed"></div>
                 </div>
                 <div class="">
-                    <p class="text-left" id="current_info"></p>
+                    <p class="text-left" id="pressure"></p>
+                    <p class="text-left" id="speed"></p>
                 </div>
             </section>
         </main>
@@ -56,17 +57,20 @@
         document.getElementById("sliderSpeed").value = <%= stats.speed %>;
         document.getElementById("displaySpeed").innerHTML = <%= stats.speed %> + "%"
 
+        document.getElementById("speed").innerHTML = "Current fan speed: " + <%= stats.speed %> + "%"
+        document.getElementById("pressure").innerHTML = "Current presssure: " + <%= stats.pressure %> + "Pa"
+
         let pressure_container = document.getElementById("sliderPressureContainer");
         let speed_container = document.getElementById("sliderSpeedContainer");
         if (<%= stats.mode %>) {
-            document.getElementById("current_info").innerHTML = "Current pressure: <%= stats.pressure %>Pa"
+            document.getElementById("speed").hidden = false
 
             document.getElementById("toggleBtn").checked = true
             pressure_container.hidden = false;
             speed_container.hidden = true;
         }
         else {
-            document.getElementById("current_info").innerHTML = "Current fan speed: <%= stats.speed %>%"
+            document.getElementById("speed").hidden = true
 
             document.getElementById("toggleBtn").checked = false
             pressure_container.hidden = true;
