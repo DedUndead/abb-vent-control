@@ -7,7 +7,7 @@ The project creates a smart system solution for adjusting and monitoring pressur
 
 # Overview
 
-Pictures and general description of the project is provided in root folder.
+General description of the project is provided in root folder.
 
 The system consists of several components:
 * ABB Frequency Controller simulator (Arduino)
@@ -22,6 +22,29 @@ The main idea is to provide two operation modes for the system: **automatic** an
 
 The system expects input from WEB UI (via MQTT payload) and Button module.<br>
 Considering several input and output methods, software needs to syncronize LCD, WEB UI with current machine's state.
+
+![Software](../images/labels.png)
+
+# User manual
+
+In order for device to establish connection with web, under **project_main/includes/project_main.h** specify values of:<br>
+NETWORK_SSID, NETWORK_PASS, MQTT_IP, MQTT_PORT.<br>
+If you would like to use device with no MQTT connection, define NO_MQTT as 1.
+
+The Liquid Crystal Display shows a simple menu with four items:
+* Mode (Automatic / Manual) -> adjust this value to change the mode
+* Frequency (0 / 100) -> Adjust this value to change speed of the fan
+* Target pressure (0 / 120) -> Adjust this value to change setpoint in automatic mode
+* Pressure (0 / 100) -> Display current system's pressure
+
+The system can be controlled with the buttons:
+* Left button -> move left / decrement value
+* Middle button -> select element / increment value
+* Right button -> move right / increment value
+
+Note, that in automatic mode frequency cannot be incremented/decremented.<br>
+As well as in manual mode, target pressure is not adjustable.<br>
+Menu item "Pressure" cannot be adjusted at any points.
 
 # Hardware Architecture
 
