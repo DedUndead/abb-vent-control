@@ -1,83 +1,74 @@
+//	init socket
 const socket = io("localhost:3000");
 
 socket.on("connect", () => {  
-	console.log(socket.id); 
+    console.log("Socket id: " + socket.id); 
 });
 
+//	Update stats realtime
 socket.on("stats", (data) => {
-	let pressureSlider = document.getElementById('sliderPressure');
-	let displayPressure = document.getElementById('displayPressure');
-	let pressureContainer = document.getElementById('sliderPressureContainer');
-	
-	let sliderSpeed = document.getElementById('sliderSpeed');
-	let displaySpeed = document.getElementById('displaySpeed');
-	let speedContainer = document.getElementById('sliderSpeedContainer');
 
+	let current_pressure = document.getElementById("pressure")
 	let mode = document.getElementById('toggleBtn')
 
+	let pressure_slider = document.getElementById('sliderPressure');
+	let display_pressure = document.getElementById('displayPressure');
+	let pressure_container = document.getElementById('sliderPressureContainer');
 
-	console.log(data.pressure)
-	document.getElementById("pressure").innerHTML = "Current pressure: " + data.pressure + "Pa";
+	let speed_slider = document.getElementById('sliderSpeed');
+	let display_speed = document.getElementById('displaySpeed');
+	let speed_container = document.getElementById('sliderSpeedContainer');
 
-	pressureSlider.value = data.setpoint;
-	displayPressure.innerHTML = data.setpoint + "Pa";
+	// update current pressure
+	current_pressure.innerHTML = "Current pressure: " + data.pressure + "Pa";
 
-	sliderSpeed.value = data.speed;
-	displaySpeed.innerHTML = data.speed + "%";
-	if(data.auto === true) {
+	// update fan svg
+	// updte_fan_svg()
+
+	// update slider values
+	pressure_slider.value = data.setpoint;
+	speed_slider.value = data.speed;
+	display_pressure.innerHTML = data.setpoint + "Pa";
+	display_speed.innerHTML = data.speed + "%";
+
+	//	update correct slider
+    if(data.mode == 1) {
 		mode.checked = true;
-		pressureContainer.hidden = false;
-		speedContainer.hidden = true;
+
+		// show pressure
+		pressure_container.hidden = false;
+		speed_container.hidden = true;
 	}
 	else {
 		mode.checked = false;
-		pressureContainer.hidden = true;
-		speedContainer.hidden = false;
+
+		// show speed
+		pressure_container.hidden = true;
+		speed_container.hidden = false;
 	}
-
-
 });
 
-// Template function which emits to server
-/*const update = async () => {
-	socket.emit("update", data)
-}*/
+//	Emit data needed to update the MCU
+function update_mqtt(){
+	//	Get necessary elements
+	let speed_slider = document.getElementById('sliderSpeed');
+	let pressure_slider = document.getElementById('sliderPressure');
+	let mode = document.getElementById('toggleBtn')
 
-const userActivity = async (userData) => {
-	socket.emit("user_activity", userData)
+	let mqtt_data = {
+		speed : + speed_slider.value,
+		setpoint : + pressure_slider.value,
+		mode : + mode.checked
+	}
+	socket.emit("update_mqtt", mqtt_data)
 }
 
-
-document.getElementById('sliderPressure').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"PRESSURE_SLIDER",
-			description:"Pressure slider changed value",
-			value: event.target.value
-		};
-
-		userActivity(userData);
-});
-
-document.getElementById('sliderSpeed').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"SPEED_SLIDER",
-			description:"Speed slider changed value",
-			value: event.target.value
-		};
-
-		userActivity(userData);
-});
-
-document.getElementById('toggleBtn').addEventListener('change', (event) => {
-	userData = 
-		{
-			type:"TOGGLE_BUTTON",
-			description:"Toggle button has been pressed",
-			value: event.target.checked
-		};
-
-		userActivity(userData);
-});
-//timer = setInterval(update, 5000);*/
+//	Emit data needed tu update the user activity db
+function update_userdb(type_, desc_, val_){
+	let user_data = {
+		type: type_,
+		description: desc_,
+		value: val_
+	};
+	socket.emit("update_userdb", user_data);
+}
