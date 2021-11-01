@@ -43,3 +43,12 @@ To run the web application, there are some prerequierments:
 2. Install the modules listed above 
 3. Run the web application
 
+#### Install the NodeJS framework
+<pre><code> npm init
+</code></pre>
+
+#### Install the modules listed above 
+<pre><code> npm install animejs, async-mqtt, bcrypt, connect-flash, connect-mongo, ejs, express, express-session, mongodb, mongoose, passport, passport-local, socket.io, nodemon, chartjs
+</code></pre>
+
+#### Run the web application
