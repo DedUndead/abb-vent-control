@@ -39,5 +39,5 @@ Use of non-standard libraries: C++ Json
 
 More detailed hardware architecture is provided in separate documentation, as mentioned above.
 
-## Overall project arcitecture
-![Overall project arcitecture](images/diagram.png)
+# Overall project arcitecture
+![Overall project arcitecture](images/overall.png)
