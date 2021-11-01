@@ -9,6 +9,12 @@ Speed - The user can change the speed of the ABB vent when the mode is on the ma
 Pressure - The user can change the pressure of the ABB vent when the mode is on the automatic mode
 In addition , the user can see the overall statistics of the data stored in the database on the stats page. For example, user sessions, user activity, and data from the sensor in between two different times.
 
+## Table of contents
+1. [Description](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#description)
+2. [Technology stack](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#technology-stack)
+3. [User Manual](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#user-manual)
+4. [Functionalities](https://github.com/DedUndead/ABB-Vent-Control/tree/new_updates/web#functionalities) 
+
 ## Technology stack
 
 | Technology | Application |
