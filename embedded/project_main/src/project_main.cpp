@@ -185,7 +185,7 @@ int main(void) {
 
     	// Component failure handling
     	if (status.operation_status == VENT_HARDWARE_ERROR) {
-    		lcd.print("Error:");
+    		lcd.print("Error:          ");
     		lcd.print("Component error", LCD_NEXT_LINE);
 
     		delay_systick(ERROR_TIMEOUT);
@@ -194,7 +194,7 @@ int main(void) {
 
     	// Setpoint timeout failure handling
     	if (status.operation_status == VENT_TIMEOUT_ERROR) {
-    		lcd.print("Error:");
+    		lcd.print("Error:          ");
     		lcd.print("Setpoint timeout", LCD_NEXT_LINE);
 
     		delay_systick(ERROR_TIMEOUT);
