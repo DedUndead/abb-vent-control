@@ -128,3 +128,8 @@ General algorithms for handlers:<br>
 
 One external library was used for JSON parsing.<br>
 Credits: [JSON](https://github.com/nlohmann/json)
+
+# Expected MQTT data format
+
+The program expects JSON string over MQTT, containing **setpoint**, **speed** and **mode** with integer values:<br>
+`{ "setpoint": ..., "speed": ..., "mode": ... }`<br>
