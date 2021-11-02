@@ -191,15 +191,7 @@ function line_chart(id_name_div, id_name_canva, x_axis, y_axis, title_name) {
                         type: 'time',
                         // For a category axis, the val is the index so the lookup via getLabelForValue is needed
                         callback: function (val, index) {
-                            // Hide the label of every 2nd dataset
-                            if (index > 0 && index < x_axis.length -1) {
-                                console.log("inside if" + val + "\n")
-                                return '';
-                            }
-                            else {
-                                console.log("inside else" + val + "\n")
-                                return this.getLabelForValue(val);
-                            }
+                            return '';
                         },
                         autoSkip: false, 
                         maxTicksLimit: 2,

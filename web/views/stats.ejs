@@ -2,13 +2,14 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <title>Stats</title>
 </head>
 
 <body class="flex flex-col justify-center mx-10 mt-10 xl:max-w-6xl xl:mx-auto">
     <header
-        class="w-full p-3 flex flex-row justify-between items-center bg-blue-100 border-t-2 border-r-2 border-l-2 border-indigo-300 rounded-t-2xl">
+        class="w-full p-3 flex flex-row justify-between items-center bg-blue-100 border-2 border-indigo-300 rounded-t-2xl">
         <nav class="w-full pl-5 pr-5 flex flex-row justify-between text-2xl">
             <div>
                 <a class="pl-2" href="/Dashboard">Dashboard</a>
@@ -20,47 +21,48 @@
             </div>
         </nav>
     </header>
-    <main class="w-full px-3 py-32  flex flex-row border-b-2 border-r-2 border-l-2 border-indigo-300 rounded-b-2xl">
-        <section class="w-2/3 flex flex-col items-center">
-            <div class="h-1/2">
-                <canvas id="myBarChart" class='h-full'></canvas>
+    <main class="w-full mb-3 px-3 border-b-2 border-r-2 border-l-2 border-indigo-300 rounded-b-2xl">
+        <section class="flex flex-col md:flex-row md:gap-20 justify-center">
+            <div class="w-full flex flex-col relative w-11/12 md:w-5/12 h-auto">
+                <div class="mt-5">
+                    <canvas id="myBarChart" class="h-full"></canvas>
+                </div>
+
+                <div class="mt-10">
+                    <canvas id="myPieChart" class=""></canvas>
+                </div>
             </div>
 
-            <div class="h-1/2">
-                <canvas id="myPieChart" class='h-full'></canvas>
-            </div>
-        </section>
+            <div class="w-full flex flex-col relative w-11/12 md:w-5/12 h-auto">
+                <div id="speed_line_chart_container" class="mt-10">
+                    <canvas id="mySpeedLineChart"></canvas>
+                </div>
+                <div id="pressure_line_chart_container" class="mt-10">
+                    <canvas id="myPressureLineChart"></canvas>
+                </div>
+            
+                <div class="my-5 relative">
+                    <p class="border-2">Start Date:</p>
+                    <form id="form_start" class="h-1/4 border-2">
+                        <label class="inline-block ml-1 mt-0.1">Date:
+                            <input name="start_current_date" type="date" class="block border-2" min="2021-09-01" max="2021-11-02">
+                        </label>
+                        <label class="inline-block ml-1 mt-0.1"> Time:
+                            <input name="start_current_time" type="time" class="block border-2">
+                        </label>
+                    </form>
 
-        <section class="w-2/3 flex flex-col items-center">
-
-            <div id="speed_line_chart_container" class="h-full">
-                <canvas id="mySpeedLineChart"></canvas>
-            </div>
-            <div id="pressure_line_chart_container" class="h-full">
-                <canvas id="myPressureLineChart"></canvas>
-            </div>
-           
-            <div class="h-1/4">
-                <p class="border-2">Start Date:</p>
-                <form id="form_start" class="h-1/4 border-2">
-                    <label class="inline-block ml-1 mt-0.1">Date:
-                        <input name="start_current_date" type="date" class="block border-2" min="2021-09-01" max="2021-11-02">
-                    </label>
-                    <label class="inline-block ml-1 mt-0.1"> Time:
-                        <input name="start_current_time" type="time" class="block border-2">
-                    </label>
-                </form>
-
-                <p class="border-2">Target Date:</p>
-                <form id="form_target" class="pl-0 h-1/4  border-2">
-                    <label class="inline-block ml-1 mt-0.1">Date:
-                        <input name="target_date" type="date" class="block border-2"  min="2021-09-01" max="2021-11-02">
-                    </label>
-                    <label class="inline-block ml-1 mt-0.5"> Time:
-                        <input name="target_time" type="time" class="block border-2">
-                    </label>
-                </form>
-                <button type="button" id="submit" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">submit</button>
+                    <p class="border-2">Target Date:</p>
+                    <form id="form_target" class="pl-0 h-1/4  border-2">
+                        <label class="inline-block ml-1 mt-0.1">Date:
+                            <input name="target_date" type="date" class="block border-2"  min="2021-09-01" max="2021-11-02">
+                        </label>
+                        <label class="inline-block ml-1 mt-0.5"> Time:
+                            <input name="target_time" type="time" class="block border-2">
+                        </label>
+                    </form>
+                    <button type="button" id="submit" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow">submit</button>
+                </div>
             </div>
         </section>
     </main>
